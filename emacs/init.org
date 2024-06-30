@@ -1,0 +1,1045 @@
+#+TITLE: Jawad's Emacs Config
+#+AUTHOR: Jawad Ahmed (@jawadcode)
+#+DESCRIPTION: My personal emacs configuration.
+#+STARTUP: showeverything
+#+OPTIONS: toc:2
+#+PROPERTY: header-args:emacs-lisp :tangle ./init.el :mkdirp yes
+
+# TODO:
+# * Proof-General for Coq, I may test Coq out on windows considering
+#   that i have the DKML OCaml toolchain working.
+
+* Table of Contents :toc:
+- [[#prelude][Prelude]]
+  - [[#initel-header][~init.el~ header]]
+  - [[#set-font-for-windows][Set Font (for Windows)]]
+  - [[#set-default-directory-to-home][Set Default Directory to ~$HOME~]]
+  - [[#set-backup-directory][Set Backup Directory]]
+  - [[#set-custom-file][Set Custom File]]
+  - [[#zooming-inout][Zooming In/Out]]
+  - [[#indentation][Indentation]]
+  - [[#linux-specific-macro][Linux-Specific Macro]]
+- [[#straightel-setup][Straight.el Setup]]
+  - [[#bootstrap-straight][Bootstrap Straight]]
+  - [[#diminish][Diminish]]
+  - [[#general-keybinds][General Keybinds]]
+- [[#misc-setup][Misc Setup]]
+  - [[#display-line-numbers-and-enable-soft-wrap][Display Line Numbers and Enable Soft-Wrap]]
+  - [[#garbage-collector-magic-hack][Garbage Collector Magic Hack]]
+  - [[#create-general-keybinds-definer][Create General Keybinds Definer]]
+  - [[#miscellaneous-keybinds][Miscellaneous Keybinds]]
+  - [[#sudo-edit][Sudo Edit]]
+- [[#editor][Editor]]
+  - [[#evil-mode][Evil Mode]]
+  - [[#which-key][Which-Key]]
+  - [[#treemacs][Treemacs]]
+  - [[#projectile][Projectile]]
+  - [[#pdf-tools][PDF-Tools]]
+- [[#appearance][Appearance]]
+  - [[#theme-standard-themes-light-disabled][Theme (Standard-Themes Light, Disabled)]]
+  - [[#all-the-icons][All The Icons]]
+  - [[#ligatures][Ligatures]]
+  - [[#dashboard][Dashboard]]
+  - [[#solaire-mode][Solaire-Mode]]
+  - [[#enable-divider-for-resizing-windows][Enable Divider for Resizing Windows]]
+  - [[#doom-themes-material-dark][Doom-Themes (Material-Dark)]]
+  - [[#doom-modeline][Doom-Modeline]]
+  - [[#centaur-tabs][Centaur Tabs]]
+- [[#org-mode][Org-Mode]]
+  - [[#disabling-org-indent-mode][Disabling Org-Indent-Mode]]
+  - [[#keybinds][Keybinds]]
+  - [[#enabling-table-of-contents][Enabling Table of Contents]]
+  - [[#enable-org-bullets][Enable Org Bullets]]
+  - [[#enable-org-tempo-expansions][Enable Org Tempo Expansions]]
+- [[#completion][Completion]]
+  - [[#ivy--counsel][Ivy & Counsel]]
+  - [[#company][Company]]
+  - [[#smartparens][Smartparens]]
+  - [[#parinfer][Parinfer]]
+- [[#language-support][Language Support]]
+  - [[#multiple-major-modes-with-polymode][Multiple Major Modes with Polymode]]
+  - [[#tree-sitter][Tree-Sitter]]
+  - [[#lsp-mode][LSP-Mode]]
+  - [[#rust-mode][Rust-Mode]]
+  - [[#python-mode][Python-Mode]]
+  - [[#haskell-mode][Haskell-Mode]]
+  - [[#lean4-mode][Lean4-Mode]]
+  - [[#idris-mode][Idris-Mode]]
+  - [[#meson-mode][Meson-Mode]]
+  - [[#cmake-mode][CMake-Mode]]
+  - [[#nix-mode][Nix-Mode]]
+  - [[#typescript-mode-][Typescript-Mode 🤮]]
+  - [[#svelte-mode][Svelte-Mode]]
+  - [[#latex-auctex--more][Latex (AUCTeX + more)]]
+
+* Prelude
+
+The following configurations set the scene for the tragedy that is my emacs
+configuration.
+  
+** ~init.el~ header
+
+#+begin_src emacs-lisp
+  ;;; init.el --- Personal configuration -*- lexical-binding: t -*-
+#+end_src
+
+** Set Font (for Windows)
+
+#+begin_src emacs-lisp
+  (set-face-attribute 'default nil
+                      :font "Iosevka Term SS07"
+                      :height 135
+                      :weight 'regular)
+  (pcase system-type
+    ('windows-nt
+     (set-face-attribute 'variable-pitch nil
+                         :font "Segoe UI"
+                         :height 135
+                         :weight 'regular))
+    ('gnu/linux
+     (set-face-attribute 'variable-pitch nil
+                         :font "sans-serif"
+                         :height 135
+                         :weight 'regular)))
+  (set-face-attribute 'fixed-pitch nil
+                      :font "Iosevka Term SS07"
+                      :height 135
+                      :weight 'regular)
+#+end_src
+
+** Set Default Directory to ~$HOME~
+
+#+begin_src emacs-lisp
+  (setq default-directory (concat (getenv "HOME") "/"))
+#+end_src
+
+** Set Backup Directory
+
+#+begin_src emacs-lisp
+  (setq backup-directory-alist `((".*" . ,temporary-file-directory)))
+#+end_src
+
+** Set Custom File
+
+This is where customisations introduced within emacs (by uing the GUI for
+example) are appended to, rather than init.el.
+
+#+begin_src emacs-lisp
+  (setq custom-file (concat user-emacs-directory "custom.el"))
+#+end_src
+
+** Zooming In/Out
+
+Enable Ctrl +/- and Ctrl mouse-wheel-(up|down) keybinds.
+
+#+begin_src emacs-lisp
+  (global-set-key (kbd "C-+") 'text-scale-increase)
+  (global-set-key (kbd "C--") 'text-scale-decrease)
+  (global-set-key (kbd "<C-wheel-up>") 'text-scale-increase)
+  (global-set-key (kbd "<C-wheel-down>") 'text-scale-decrease)
+#+end_src
+
+** Indentation
+
+The mantra of the emacs user: undoing dumb defaults.
+
+#+begin_src emacs-lisp
+  (indent-tabs-mode -1)
+  (setq-default tab-width 4)
+  (setq-default evil-shift-width 4)
+#+end_src
+
+** Linux-Specific Macro
+
+A few aspects of this config are regrettably platform-specific, particularly
+linux-specific.
+
+#+begin_src emacs-lisp
+  (defmacro linux-specific! (body)
+    (pcase system-type
+       ('gnu/linux body)
+       (_ ())))
+#+end_src
+
+* Straight.el Setup
+
+** Bootstrap Straight
+
+#+begin_src emacs-lisp
+  (defvar bootstrap-version)
+  (let ((bootstrap-file
+         (expand-file-name
+          "straight/repos/straight.el/bootstrap.el"
+          (or (bound-and-true-p straight-base-dir)
+              user-emacs-directory)))
+        (bootstrap-version 7))
+    (unless (file-exists-p bootstrap-file)
+      (with-current-buffer
+          (url-retrieve-synchronously
+           "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+           'silent 'inhibit-cookies)
+        (goto-char (point-max))
+        (eval-print-last-sexp)))
+    (load bootstrap-file nil 'nomessage))
+
+  (straight-use-package 'use-package)
+  (setq straight-use-package-by-default t)
+#+end_src
+
+** Diminish
+
+Diminish allows us to prevent major modes from appearing in the modeline. This
+needs to be loaded in advance as it adds a ~:diminish~ keyword to ~use-package~
+invocations.
+
+#+begin_src emacs-lisp
+  (use-package diminish)
+#+end_src
+
+** General Keybinds
+
+The general package allows us to define keybinds and provide descriptions for
+each of them to the which-key package. This needs to be loaded in advance as
+each of the following packages will depend on it.
+
+#+begin_src emacs-lisp
+  (use-package general :config (general-evil-setup))
+#+end_src
+
+* Misc Setup
+
+** Display Line Numbers and Enable Soft-Wrap
+
+#+begin_src emacs-lisp
+  (add-hook 'text-mode-hook #'display-line-numbers-mode)
+  (add-hook 'prog-mode-hook #'display-line-numbers-mode)
+  (global-visual-line-mode t)
+  (diminish 'visual-line-mode)
+#+end_src
+
+** Garbage Collector Magic Hack
+
+This modifies the emacs lisp garbage collector to improve performance of lsp-mode
+and other emacs packages.
+
+#+begin_src emacs-lisp
+  (use-package gcmh
+    :custom
+    ;; From doom emacs' early-init.el
+    (gcmh-idle-delay 'auto) ; default is 15s
+    (gcmh-auto-idle-delay-factor 10)
+    (gcmh-high-cons-threshold (* 16 1024 1024)) ; 16mb
+    :config (gcmh-mode 1)
+    :diminish gcmh-mode)
+#+end_src
+
+** Create General Keybinds Definer
+
+#+begin_src emacs-lisp
+  (general-create-definer jawadcode/leader-keys
+    :states '(normal insert visual emacs)
+    :keymaps 'override
+    :prefix "SPC"
+    :global-prefix "M-SPC")
+#+end_src
+
+** Miscellaneous Keybinds
+
+#+begin_src emacs-lisp
+  ;; Miscellaneous keybinds
+  (jawadcode/leader-keys
+    "SPC" '(find-file :wk "Find file")
+    "f"   '(:ignore t :wk "File")
+    "f r" '(counsel-recentf :wk "Find recent files")
+    "f c" '((lambda () (interactive) (find-file "~/.config/emacs/init.org")) :wk "Open emacs config")
+    ";"   '(comment-line :wk "Comment lines")
+    ;; Help keybinds
+    "h" '(:ignore t :wk "Help")
+    "h f" '(describe-function :wk "Describe function")
+    "h v" '(describe-variable :wk "Describe variable")
+    "h r" '((lambda () (interactive) (load-file user-init-file) (load-file user-init-file)) :wk "Reload config")
+    ;; Toggle keybinds
+    "t"   '(:ignore t :wk "Toggle")
+    "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
+    "t v" '(visual-line-mode :wk "Toggle visual-line-mode"))
+#+end_src
+
+** Sudo Edit
+
+#+begin_src emacs-lisp
+  (linux-specific!
+   (use-package sudo-edit
+     :config
+     (jawadcode/leader-keys
+       "s" '(:ignore t :wk "Sudo Edit")
+       "s f" '(sudo-edit-find-file :wk "Sudo find file")
+       "s e" '(sudo-edit :wk "Sudo edit file"))))
+  #+end_src
+
+* Editor
+
+** Evil Mode
+
+Vim keybinds in emacs because why not.
+
+#+begin_src emacs-lisp
+  (use-package evil
+    :custom
+    (evil-want-integration t)
+    (evil-want-keybinding nil)
+    (evil-vsplit-window-right t)
+    (evil-split-window-below t)
+    :init
+    :config
+    (evil-set-undo-system 'undo-redo)
+    (evil-mode 1)
+    (jawadcode/leader-keys
+      "w"   '(:ignore t :wk "Windows")
+
+      ;; Window splits
+      "w x" '(evil-window-delete :wk "Close window")
+      "w n" '(evil-window-new :wk "New horizontal window")
+      "w m" '(evil-window-vnew :wk "New vertical window")
+      "w h" '(evil-window-split :wk "Horizontal split window")
+      "w v" '(evil-window-vsplit :wk "Vertical split window")
+
+      ;; Window motions
+      "w h" '(evil-window-left :wk "Window left")
+      "w j" '(evil-window-down :wk "Window down")
+      "w k" '(evil-window-up :wk "Window up")
+      "w l" '(evil-window-right :wk "Window right")
+      "w w" '(evil-window-next :wk "Goto next window")))
+
+  ;; Extra evil stuff
+  (use-package evil-collection
+    :after evil
+    :custom (evil-collection-mode-list '(dashboard dired ibuffer))
+    :config (evil-collection-init)
+    :diminish evil-collection-unimpaired-mode)
+
+  (use-package evil-anzu :after evil)
+
+  (use-package evil-tutor)
+    #+end_src
+
+** Which-Key
+
+Which-key shows a menu of keybinds whenever a key that is the beginning of a
+keybind is pressed.
+
+#+begin_src emacs-lisp
+  (use-package which-key
+    :init (which-key-mode 1)
+    :custom
+    (which-key-add-column-padding 3)
+    (which-key-idle-delay 0.1)
+    :diminish which-key-mode)
+#+end_src
+
+** Treemacs
+
+This is a file-tree view that can be opened to the left side of any code buffers.
+
+#+begin_src emacs-lisp
+  (use-package treemacs-all-the-icons :defer t :commands treemacs-all-the-icons)
+
+  (use-package treemacs
+    :config
+    (jawadcode/leader-keys
+      "t t" '((lambda () (treemacs)) :wk "Toggle treemacs"))
+    (treemacs-load-all-the-icons-with-workaround-font "Hermit"))
+
+  (use-package treemacs-evil :after (treemacs evil))
+
+  (use-package treemacs-projectile :after (treemacs projectile))
+
+  (use-package treemacs-icons-dired)
+
+  (use-package treemacs-tab-bar :after treemacs)
+#+end_src
+
+** Projectile
+
+This allows us to manage projects and integrates with lsp-mode as well as
+treemacs.
+
+#+begin_src emacs-lisp
+  (use-package projectile
+    :config
+    (projectile-mode 1)
+    (jawadcode/leader-keys
+      "p" '(projectile-command-map :wk "Projectile"))
+    :diminish projectile-mode)
+#+end_src
+
+** PDF-Tools
+
+A PDF viewer.
+
+#+begin_src emacs-lisp
+  (linux-specific!
+   (use-package pdf-tools
+     :mode ("\\.pdf\\'" . pdf-view-mode)
+     :config
+     (setq-default pdf-view-display-size 'fit-width)
+     (setq pdf-view-use-scaling t
+	   pdf-view-use-imagemagick nil)
+     (add-hook 'pdf-view-mode-hook
+	       (lambda ()
+		 (setq-local evil-normal-state-cursor (list nil))))
+     (evil-make-overriding-map pdf-view-mode-map 'normal)))
+#+end_src
+
+* Appearance
+
+** Theme (Standard-Themes Light, Disabled)
+
+#+begin_src emacs-lisp :tangle no
+  (use-package standard-themes
+    :custom
+    ;; Read the doc string of each of those user options.  These are some
+    ;; sample values.
+    (standard-themes-bold-constructs t)
+    (standard-themes-italic-constructs t)
+    (standard-themes-disable-other-themes t)
+    (standard-themes-mixed-fonts t)
+    (standard-themes-variable-pitch-ui t)
+    (standard-themes-prompts '(extrabold italic))
+    ;; more complex alist to set weight, height, and optional
+    ;; `variable-pitch' per heading level (t is for any level not
+    ;; specified):
+    (standard-themes-headings
+     '((0 . (variable-pitch light 1.8))
+       (1 . (variable-pitch light 1.7))
+       (2 . (variable-pitch light 1.6))
+       (3 . (variable-pitch semilight 1.5))
+       (4 . (variable-pitch semilight 1.4))
+       (5 . (variable-pitch 1.3))
+       (6 . (variable-pitch 1.2))
+       (7 . (variable-pitch 1.1))
+       (agenda-date . (1.2))
+       (agenda-structure . (variable-pitch light 1.7))
+       (t . (variable-pitch 1.0))))
+    :config
+    (standard-themes-load-light)) ; OR (standard-themes-load-dark))
+#+end_src
+
+** All The Icons
+
+Allows for icon support across many packages.
+
+#+begin_src emacs-lisp
+  (use-package all-the-icons
+    :if (display-graphic-p))
+
+  ;; This enables all-the-icons in the dired file manager
+  (use-package all-the-icons-dired
+    :after all-the-icons
+    :hook (dired-mode . all-the-icons-dired-mode))
+#+end_src
+
+** Ligatures
+
+#+begin_src emacs-lisp
+  (use-package ligature
+    :config
+    ;; Enable all Iosevka ligatures in programming modes
+    (ligature-set-ligatures
+     'prog-mode
+     '("|||>" "<|||" "<==>" "<!--" "####" "~~>" "***" "||=" "||>"
+       ":::" "::=" "=:=" "===" "==>" "=!=" "=>>" "=<<" "=/=" "!=="
+       "!!." ">=>" ">>=" ">>>" ">>-" ">->" "->>" "-->" "---" "-<<"
+       "<~~" "<~>" "<*>" "<||" "<|>" "<$>" "<==" "<=>" "<=<" "<->"
+       "<--" "<-<" "<<=" "<<-" "<<<" "<+>" "</>" "###" "#_(" "..<"
+       "..." "+++" "/==" "///" "_|_" "www" "&&" "^=" "~~" "~@" "~="
+       "~>" "~-" "**" "*>" "*/" "||" "|}" "|]" "|=" "|>" "|-" "{|"
+       "[|" "]#" "::" ":=" ":>" ":<" "$>" "==" "=>" "!=" "!!" ">:"
+       ">=" ">>" ">-" "-~" "-|" "->" "--" "-<" "<~" "<*" "<|" "<:"
+       "<$" "<=" "<>" "<-" "<<" "<+" "</" "#{" "#[" "#:" "#=" "#!"
+       "##" "#(" "#?" "#_" "%%" ".=" ".-" ".." ".?" "+>" "++" "?:"
+       "?=" "?." "??" ";;" "/*" "/=" "/>" "//" "__" "~~" "(*" "*)"
+       "\\\\" "://"))
+    ;; Enables ligature checks globally in all buffers. You can also do it
+    ;; per mode with `ligature-mode'.
+    (global-ligature-mode t))
+#+end_src
+
+** Dashboard
+
+This package shows a dashboard on startup, getting rid of that hideous default
+one. It includes useful links to recent files as well as projects, and most
+importantly, it has a better emacs logo.
+
+#+begin_src emacs-lisp
+  (use-package dashboard
+    :after (all-the-icons projectile)
+    :init
+    (setq initial-buffer-choice 'dashboard-open)
+    (setq dashboard-startup-banner 'logo)
+    (setq dashboard-icon-type 'all-the-icons)
+    (setq dashboard-projects-backend 'projectile)
+    (setq dashboard-center-content t)
+    (setq dashboard-set-heading-icons t)
+    (setq dashboard-set-file-icons t)
+    (setq dashboard-startupify-list '(dashboard-insert-banner
+                                      dashboard-insert-newline
+                                      dashboard-insert-banner-title
+                                      dashboard-insert-newline
+                                      dashboard-insert-navigator
+                                      dashboard-insert-newline
+                                      dashboard-insert-init-info
+                                      dashboard-insert-items))
+    (setq dashboard-items '((recents   . 6)
+                            (projects  . 6)
+                            (bookmarks . 6)))
+    :config
+    (dashboard-setup-startup-hook))
+#+end_src
+
+** Solaire-Mode
+
+Distinguishes code buffers from other buffers. Idk if this is even working but
+once again, I can't be bothered checking.
+
+#+begin_src emacs-lisp
+  (use-package solaire-mode :config (solaire-global-mode +1))
+#+end_src
+
+** Enable Divider for Resizing Windows
+
+#+begin_src emacs-lisp
+  (window-divider-mode)
+#+end_src
+
+** Doom-Themes (Material-Dark)
+
+#+begin_src emacs-lisp
+  (use-package doom-themes
+    :demand t
+    :config
+    (setq doom-themes-enable-bold t
+          doom-themes-enable-italic t
+          doom-themes-padded-modeline t)
+    (load-theme 'doom-material-dark t)
+
+    (doom-themes-visual-bell-config)
+    (doom-themes-org-config))
+#+end_src
+
+** Doom-Modeline
+
+#+begin_src emacs-lisp
+  (use-package nerd-icons)
+  (use-package doom-modeline
+    :ensure t
+    :init (doom-modeline-mode 1))
+#+end_src
+
+** Centaur Tabs
+
+#+begin_src emacs-lisp
+  (use-package centaur-tabs
+    :after (all-the-icons)
+    :config
+    (setq centaur-tabs-style "bar")
+    (setq centaur-tabs-set-bar 'over)
+    (centaur-tabs-mode t)
+    :hook (dashboard-mode . centaur-tabs-local-mode)
+    :bind
+    ("C-<tab>"   . centaur-tabs-backward)
+    ("C-S-<tab>" . centaur-tabs-forward))
+#+end_src
+
+* Org-Mode
+
+** Disabling Org-Indent-Mode
+
+#+begin_src emacs-lisp
+  (setq org-indent-mode nil)
+#+end_src
+
+** Keybinds
+
+#+begin_src emacs-lisp
+  ;; Org-mode keybinds
+  (jawadcode/leader-keys
+    "m"   '(:ignore t :wk "Org")
+    "m a" '(org-agenda :wk "Org agenda")
+    "m e" '(org-export-dispatch :wk "Org export dispatch")
+    "m i" '(org-toggle-item :wk "Org toggle item")
+    "m t" '(org-todo :wk "Org todo")
+    "m B" '(org-babel-tangle :wk "Org babel tangle")
+    "m T" '(org-todo-list :wk "Org todo list"))
+
+  ;; Org mode table keybinds
+  (jawadcode/leader-keys
+    "m b"   '(:ignore t :wk "Tables")
+    "m b -" '(org-table-insert-hline :wk "Insert hline in table"))
+
+  ;; Org mode datetime keybinds
+  (jawadcode/leader-keys
+    "m d"   '(:ignore t :wk "Date/deadline")
+    "m d t" '(org-time-stamp :wk "Org time stamp"))
+#+end_src
+
+** Enabling Table of Contents
+
+Toc-org automatically generates a table of contents (toc) for org files.
+
+#+begin_src emacs-lisp
+  (use-package toc-org
+    :commands toc-org-enable
+    :hook (org-mode . toc-org-enable))
+#+end_src
+
+** Enable Org Bullets
+
+Org-bullets gives us fancy bullet-points with headings and lists in org mode,
+as well as indentation under each heading for clarity.
+
+#+begin_src emacs-lisp
+  (add-hook 'org-mode-hook 'org-indent-mode)
+  (use-package org-bullets)
+  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+#+end_src
+
+** Enable Org Tempo Expansions
+
+Like emmet but for org-mode.
+For example, <s expands to a source code block when followed by TAB.
+
+#+begin_src emacs-lisp
+  (require 'org-tempo)
+#+end_src
+
+* Completion
+
+** Ivy & Counsel
+
+Ivy is a generic completion frontend.
+Counsel provides Ivy versions of common Emacs commands.
+Ivy-rich adds descriptions alongside commands in M-x.
+
+#+begin_src emacs-lisp
+  (use-package ivy
+    ;; :bind
+    ;; (("C-c C-r" . ivy-resume)
+    ;;  ("C-x B"   . ivy-switch-buffer-other-window))
+    :custom
+    (ivy-use-virtual-buffers t)
+    (ivy-count-format "(%d/%d) ")
+    (enable-recursive-minibuffers t)
+    :config
+    (ivy-mode)
+    (jawadcode/leader-keys
+      "i"   '(:ignore t :wk "Ivy")
+      "i r" '(ivy-resume :wk "Resume previous Ivy completion")
+      "i b" '(ivy-switch-buffer-other-window :wk "Switch to another buffer in another window"))
+    :diminish ivy-mode)
+
+  (use-package counsel
+    :after ivy
+    :config (counsel-mode)
+    :diminish counsel-mode)
+
+  ;; Adds bling to our ivy completions
+  (use-package ivy-rich
+    :after ivy
+    :init (ivy-rich-mode 1)
+    :custom
+    ;; I'll be honest, idk what this does
+    (ivy-virtual-abbreviate 'full
+                            ivy-rich-switch-buffer-align-virtual-buffer t
+                            ivy-rich-path-style 'abbrev)
+    :config
+    (ivy-set-display-transformer 'ivy-switch-buffer
+                                'ivy-rich-switch-buffer-transform))
+
+  (use-package all-the-icons-ivy-rich
+    :after ivy-rich
+    :init (all-the-icons-ivy-rich-mode 1))
+#+end_src
+
+** Company
+
+Company is a completion framework for text-mode.
+
+#+begin_src emacs-lisp
+  (use-package company
+    :init (setq company-tooltip-align-annotations t)
+    :config
+    (define-key company-active-map (kbd "C-n") nil) ; Select next
+    (define-key company-active-map (kbd "C-p") nil) ; Select previous
+    (define-key company-active-map (kbd "RET") nil) ; Complete selection
+    (define-key company-active-map (kbd "M-j") #'company-select-next)
+    (define-key company-active-map (kbd "M-k") #'company-select-previous)
+    (define-key company-active-map (kbd "<tab>") #'company-complete-selection)
+    (global-company-mode)
+    (diminish 'company-capf-mode)
+    :diminish company-mode)
+
+  (use-package company-box
+    :after company
+    :hook (company-mode . company-box-mode)
+    :diminish company-box-mode)
+#+end_src
+
+** Smartparens
+
+Smartparens provides the automatic closing of pairs.
+
+#+begin_src emacs-lisp
+  (use-package smartparens-mode
+    :straight smartparens
+    :hook (prog-mode text-mode markdown-mode)
+    :config (require 'smartparens-config)
+    :diminish smartparens-mode)
+#+end_src
+
+** Parinfer
+
++Parinfer handles the automatic inference of closing parentheses when writing
+lisp, and aims to make the experience much like that of writing python.+
++It's a little more complex than smartparens in that it can use indentation and
+deletion to determine where parentheses should go+
+
+This package makes editing emacs lisp miserable due to the constant errors,
+I'm done with it. I think the issue might be ~org-mode~ but I won't bother
+making sure.
+
+#+begin_src emacs-lisp :tangle no
+  (use-package parinfer-rust-mode
+    :hook emacs-lisp-mode ; TODO: Add racket
+    :config
+    ;; Smartparens conflicts with indent-tabs-mode so it has to be disabled
+    (setq-default indent-tabs-mode nil))
+#+end_src
+
+
+* Language Support
+
+** Multiple Major Modes with Polymode
+
+This allows us to have language support within codeblocks.
+
+#+begin_src emacs-lisp
+  (use-package poly-org)
+#+end_src
+
+** Tree-Sitter
+
+Tree-sitter is a highly performant parser "framework" that can be used for syntax
+highlighting. Tree-sitter functionality is actually built into Emacs 29+, however
+its a complete pain in the arse to setup and maintain, so I'm resorting to the
+tried and true tree-sitter package.
+
+#+begin_src emacs-lisp
+  (use-package tree-sitter
+    :after tree-sitter-langs
+    :config
+    (require 'tree-sitter-langs)
+    (global-tree-sitter-mode)
+    (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
+
+  (use-package tree-sitter-langs)
+#+end_src
+
+** LSP-Mode
+
+#+begin_src emacs-lisp
+  (use-package lsp-mode
+    ;; :hook ((rust-mode          . lsp)
+    ;;        (c-mode             . lsp)
+    ;;        (c++-mode           . lsp)
+    ;;        (meson-mode         . lsp)
+    ;;        (conf-toml-mode     . lsp)
+    ;;        (html-mode          . lsp)
+    ;;        (css-mode           . lsp)
+    ;;        (javascript-mode    . lsp)
+    ;;        (typescript-mode    . lsp)
+    ;;        (lsp-mode           . lsp-enable-which-key-integration))
+    :hook ((prog-mode . lsp)
+           (lsp-mode  . lsp-enable-which-key-integration))
+    :config
+    (evil-define-key 'normal lsp-mode-map (kbd "SPC l") lsp-command-map)
+    (setq lsp-inlay-hint-enable t)
+    :commands lsp
+    :diminish flymake-mode)
+
+  (use-package lsp-ui :commands lsp-ui-mode)
+  (use-package lsp-ivy :commands lsp-ivy-workspace-symbol)
+  (use-package lsp-treemacs :commands lsp-treemacs-errors-list)
+#+end_src
+
+** Rust-Mode
+
+#+begin_src emacs-lisp
+  (use-package rust-mode :commands rust-mode)
+#+end_src
+
+** Python-Mode
+
+#+begin_src emacs-lisp
+  (use-package lsp-pyright
+    :hook (python-mode . (lambda ()
+                           (require 'lsp-pyright)
+                           (lsp))))  ; or lsp-deferred
+#+end_src
+
+** Haskell-Mode
+
+I ~<$>~ love ~>>>~ reading ~>>=~ Haskell ~$~ code.
+
+#+begin_src emacs-lisp
+  (use-package lsp-haskell
+    :hook ((haskell-mode          . lsp)
+           (haskell-literate-mode . lsp)
+           (haskell-mode          . (lambda () (setq-local evil-shift-width 2)))))
+#+end_src
+
+** Lean4-Mode
+
+I love lean.
+
+#+begin_src emacs-lisp
+  (use-package lean4-mode
+    :straight (lean4-mode
+               :host github
+               :repo "leanprover/lean4-mode"
+               :files ("*.el" "data"))
+    :commands lean4-mode)
+#+end_src
+
+** Idris-Mode
+
+Doesn't support Windows, probably won't for a while considering it's still mostly
+an academic endeavour.
+
+#+begin_src emacs-lisp
+  (linux-specific!
+   (use-package idris2-mode
+     :straight (idris2-mode
+		:host github
+		:repo "idris-community/idris2-mode")
+     :commands idris2-mode))
+#+end_src
+
+** Meson-Mode
+
+The only usable C/C++ build system.
+
+#+begin_src emacs-lisp
+  (use-package meson-mode :commands meson-mode)
+#+end_src
+
+** CMake-Mode
+
+This is only for the purposes of contributing to and working with other
+[unenlightened] peoples' projects.
+
+#+begin_src emacs-lisp
+  (use-package cmake-mode :commands cmake-mode)
+#+end_src
+
+** Nix-Mode
+
+#+begin_src emacs-lisp
+  (linux-specific!
+   (progn
+    (use-package lsp-nix
+      :straight lsp-mode
+      :custom (lsp-nix-nil-formatter ["nixpkgs-fmt"]))
+    (use-package nix-mode
+      :hook ((nix-mode . lsp-deferred)
+             (nix-mode . (lambda ()
+                           (setq-local tab-width 2)
+                           (setq-local evil-shift-width 2)))))))
+#+end_src
+
+** Typescript-Mode 🤮
+
+A necessary evil.
+
+#+begin_src emacs-lisp
+  (use-package typescript-mode)
+#+end_src
+
+** Svelte-Mode
+
+I refuse to learn React.
+
+#+begin_src emacs-lisp
+  (use-package svelte-mode
+    :hook ((svelte-mode . lsp)
+           (svelte-mode . (lambda () (tree-sitter-hl-mode -1)))))
+#+end_src
+
+** Latex (AUCTeX + more)
+
+LaTeX is miserable to write without a billion different plugins, so naturally
+I'm just copying the ones that doom emacs uses and configuring to my liking.
+
+Tangling for the following codeblock is disabled right now, as it is incomplete
+and will be a bit of an undertaking to get this working reliably and add my own
+customisations (i.e. not just blindly copying doom emacs), likely requiring a
+bit of experimentation.
+
+#+begin_src emacs-lisp
+  (use-package latex
+    :straight auctex
+    :defer t
+    :custom (bibtex-dialect 'biblatex)
+    :mode ("\\.tex\\'" . LaTeX-mode)
+    :hook (TeX-mode . prettify-symbols-mode)
+    :init
+    (setq-default TeX-master t)
+    (setq TeX-parse-self t
+          TeX-auto-save t
+          TeX-auto-local ".auctex-auto"
+          TeX-style-local ".auctex-style"
+          TeX-source-correlate-mode t
+          TeX-source-correlate-method 'synctex
+          TeX-save-query nil
+          TeX-engine 'xetex
+          TeX-PDF-mode t)
+    :config
+    ;; Source: https://tex.stackexchange.com/a/86119/81279
+    (setq font-latex-match-reference-keywords
+          '(;; BibLaTeX
+            ("printbibliography" "[{")
+            ("addbibresource" "[{")
+            ;; Standard commands.
+            ("cite" "[{")
+            ("citep" "[{")
+            ("citet" "[{")
+            ("Cite" "[{")
+            ("parencite" "[{")
+            ("Parencite" "[{")
+            ("footcite" "[{")
+            ("footcitetext" "[{")
+            ;; Style-specific commands.
+            ("textcite" "[{")
+            ("Textcite" "[{")
+            ("smartcite" "[{")
+            ("Smartcite" "[{")
+            ("cite*" "[{")
+            ("parencite*" "[{")
+            ("supercite" "[{")
+            ;; Qualified citation lists.
+            ("cites" "[{")
+            ("Cites" "[{")
+            ("parencites" "[{")
+            ("Parencites" "[{")
+            ("footcites" "[{")
+            ("footcitetexts" "[{")
+            ("smartcites" "[{")
+            ("Smartcites" "[{")
+            ("textcites" "[{")
+            ("Textcites" "[{")
+            ("supercites" "[{")
+            ;; Style-independent commands.
+            ("autocite" "[{")
+            ("Autocite" "[{")
+            ("autocite*" "[{")
+            ("Autocite*" "[{")
+            ("autocites" "[{")
+            ("Autocites" "[{")
+            ;; Text commands.
+            ("citeauthor" "[{")
+            ("Citeauthor" "[{")
+            ("citetitle" "[{")
+            ("citetitle*" "[{")
+            ("citeyear" "[{")
+            ("citedate" "[{")
+            ("citeurl" "[{")
+            ;; Special commands.
+            ("fullcite" "[{")
+            ;; Cleveref.
+            ("cref" "{")
+            ("Cref" "{")
+            ("cpageref" "{")
+            ("Cpageref" "{")
+            ("cpagerefrange" "{")
+            ("Cpagerefrange" "{")
+            ("crefrange" "{")
+            ("Crefrange" "{")
+            ("labelcref" "{")))
+    (setq font-latex-match-textual-keywords
+          '(;; BibLaTeX
+            ("parentext" "{")
+            ("brackettext" "{")
+            ("hybridblockquote" "[{")
+            ;; Auxiliary commands.
+            ("textelp" "{")
+            ("textelp*" "{")
+            ("textins" "{")
+            ("textins*" "{")
+            ;; Subcaption.
+            ("subcaption" "[{")))
+    (setq font-latex-match-variable-keywords
+        '(;; Amsmath.
+          ("numberwithin" "{")
+          ;; Enumitem.
+          ("setlist" "[{")
+          ("setlist*" "[{")
+          ("newlist" "{")
+          ("renewlist" "{")
+          ("setlistdepth" "{")
+          ("restartlist" "{")
+          ("crefname" "{")))
+
+    (pcase system-type
+      ('windows-nt
+       (add-to-list 'TeX-view-program-list '("Okular" ("okular --noraise --unique file:%o" (mode-io-correlate "#src:%n%a"))))
+       (add-to-list 'TeX-view-program-selection '(output-pdf "Okular")))
+      ('gnu/linux
+       (add-to-list 'TeX-view-program-selection '(output-pdf "PDF Tools"))
+       (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)))
+
+	(add-hook 'tex-mode-local-vars-hook #'lsp)
+	(add-hook 'latex-mode-local-vars-hook #'lsp)
+
+	(require 'tex-fold)
+	(add-hook 'LaTeX-mode-hook #'TeX-fold-mode)
+	(require 'preview)
+	(add-hook 'LaTeX-mode-hook #'LaTeX-preview-setup))
+
+  (use-package auctex-latexmk
+	:after latex
+	:hook (LaTeX-mode . (lambda () (setq TeX-command-default "LatexMk")))
+	:init (setq auctex-latexmk-inherit-TeX-PDF-mode t)
+	:config (auctex-latexmk-setup))
+  (use-package evil-tex
+	:after latex
+	:hook (LaTeX-mode . evil-tex-mode))
+  (use-package cdlatex
+	:after latex
+	:hook ((LaTeX-mode . cdlatex-mode)
+	       (org-mode   . org-cdlatex-mode))
+	:config (setq cdlatex-use-dollar-to-ensure-math nil))
+
+  (use-package company-auctex
+	:after latex
+	:config (company-auctex-init))
+
+  (use-package company-reftex
+	:after latex
+	:config
+	(add-hook 'TeX-mode-hook
+		  (lambda ()
+		    (setq-local company-backends
+				(append
+				  '(company-reftex-labels company-reftex-citations)
+                                  company-backends)))))
+
+  (use-package company-math
+	:after latex
+	:config
+	(add-hook 'TeX-mode-hook
+		  (lambda ()
+		    (setq-local company-backends
+				(append
+				  '(company-math-symbols-latex company-math-symbols-unicode company-latex-commands)
+				  company-backends)))))
+#+end_src
+
