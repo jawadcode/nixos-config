@@ -401,6 +401,13 @@
 (use-package lsp-ivy :commands lsp-ivy-workspace-symbol)
 (use-package lsp-treemacs :commands lsp-treemacs-errors-list)
 
+(defun c-c++-indentation-hook ()
+  (setq c-basic-offset tab-width)
+  (setq-local evil-shift-width 4))
+
+(add-hook 'c-mode-hook 'c-c++-indentation-hook)
+(add-hook 'c++-mode-hook 'c-c++-indentation-hook)
+
 (use-package rust-mode :commands rust-mode)
 
 (use-package lsp-pyright

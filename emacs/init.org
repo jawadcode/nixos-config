@@ -60,6 +60,7 @@
   - [[#multiple-major-modes-with-polymode][Multiple Major Modes with Polymode]]
   - [[#tree-sitter][Tree-Sitter]]
   - [[#lsp-mode][LSP-Mode]]
+  - [[#c-mode--c-mode][C-Mode & C++-Mode]]
   - [[#rust-mode][Rust-Mode]]
   - [[#python-mode][Python-Mode]]
   - [[#haskell-mode][Haskell-Mode]]
@@ -769,6 +770,17 @@ tried and true tree-sitter package.
   (use-package lsp-ui :commands lsp-ui-mode)
   (use-package lsp-ivy :commands lsp-ivy-workspace-symbol)
   (use-package lsp-treemacs :commands lsp-treemacs-errors-list)
+#+end_src
+
+** C-Mode & C++-Mode
+
+#+begin_src emacs-lisp
+  (defun c-c++-indentation-hook ()
+    (setq c-basic-offset tab-width)
+    (setq-local evil-shift-width 4))
+
+  (add-hook 'c-mode-hook 'c-c++-indentation-hook)
+  (add-hook 'c++-mode-hook 'c-c++-indentation-hook)
 #+end_src
 
 ** Rust-Mode
