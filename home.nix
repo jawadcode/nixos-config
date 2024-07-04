@@ -9,9 +9,10 @@
     brightnessctl nwg-drawer sway-contrib.grimshot swaybg swayidle swaylock
     wl-clipboard
     # Apps
-    cinnamon.nemo discord evince gnome.eog gnome.gnome-disk-utility
-    gnome.gnome-characters gnome.gnome-system-monitor helix kdePackages.kdenlive
-    obsidian playerctl qalculate-gtk rhythmbox thunderbird vlc yt-dlp
+    cinnamon.nemo discord evince gnome.eog gnome.file-roller
+    gnome.gnome-disk-utility gnome.gnome-characters gnome.gnome-system-monitor
+    helix kdePackages.kdenlive obsidian playerctl qalculate-gtk rhythmbox
+    thunderbird vlc yt-dlp
     # Fonts
     font-awesome hermit (iosevka-bin.override { variant = "SS07"; })
     (callPackage ./iosevka-term-ss07-nerd-font.nix {}) noto-fonts noto-fonts-cjk
