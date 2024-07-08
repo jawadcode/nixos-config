@@ -12,7 +12,7 @@
 * Table of Contents :toc:
 - [[#prelude][Prelude]]
   - [[#initel-header][~init.el~ header]]
-  - [[#set-font-for-windows][Set Font (for Windows)]]
+  - [[#set-font][Set Font]]
   - [[#set-default-directory-to-home][Set Default Directory to ~$HOME~]]
   - [[#set-backup-directory][Set Backup Directory]]
   - [[#set-custom-file][Set Custom File]]
@@ -60,7 +60,7 @@
   - [[#multiple-major-modes-with-polymode][Multiple Major Modes with Polymode]]
   - [[#tree-sitter][Tree-Sitter]]
   - [[#lsp-mode][LSP-Mode]]
-  - [[#c-mode--c-mode][C-Mode & C++-Mode]]
+  - [[#c-mode--c-mode][C-Mode && C++-Mode]]
   - [[#rust-mode][Rust-Mode]]
   - [[#python-mode][Python-Mode]]
   - [[#haskell-mode][Haskell-Mode]]
@@ -69,7 +69,7 @@
   - [[#meson-mode][Meson-Mode]]
   - [[#cmake-mode][CMake-Mode]]
   - [[#nix-mode][Nix-Mode]]
-  - [[#typescript-mode-][Typescript-Mode 🤮]]
+  - [[#typescript-mode-][Typescript-Mode 🤢]]
   - [[#svelte-mode][Svelte-Mode]]
   - [[#latex-auctex--more][Latex (AUCTeX + more)]]
 
@@ -84,28 +84,50 @@ configuration.
   ;;; init.el --- Personal configuration -*- lexical-binding: t -*-
 #+end_src
 
-** Set Font (for Windows)
+** Set Font
 
 #+begin_src emacs-lisp
-  (set-face-attribute 'default nil
-                      :font "Iosevka Term SS07"
-                      :height 135
-                      :weight 'regular)
+  (set-face-font 'default
+                 (font-spec :family "Iosevka Term SS07"
+                            :size 13.5
+                            :weight 'normal
+                            :width 'normal
+                            :slant 'normal))
+  (set-face-font 'fixed-pitch
+                 (font-spec :family "Iosevka Term SS07"
+                            :size 13.5
+                            :weight 'normal
+                            :width 'normal
+                            :slant 'normal))
   (pcase system-type
-    ('windows-nt
-     (set-face-attribute 'variable-pitch nil
-                         :font "Segoe UI"
-                         :height 135
-                         :weight 'regular))
     ('gnu/linux
-     (set-face-attribute 'variable-pitch nil
-                         :font "sans-serif"
-                         :height 135
-                         :weight 'regular)))
-  (set-face-attribute 'fixed-pitch nil
-                      :font "Iosevka Term SS07"
-                      :height 135
-                      :weight 'regular)
+     (set-face-font 'variable-pitch
+                    (font-spec :family "sans-serif"
+                               :size 13.5
+                               :weight 'normal
+                               :width 'normal
+                               :slant 'normal))
+     (set-fontset-font t
+                       'emoji
+                       (font-spec :family "Noto Color Emoji"
+                                  :size 13.5
+                                  :weight 'normal
+                                  :width 'normal
+                                  :slant 'normal)))
+    ('windows-nt
+     (set-face-font 'variable-pitch
+                    (font-spec :family "Segoe UI"
+                               :size 13.5
+                               :weight 'normal
+                               :width 'normal
+                               :slant 'normal))
+     (set-fontset-font t
+                       'emoji
+                       (font-spec :family "Segoe UI Emoji"
+                                  :size 13.5
+                                  :weight 'normal
+                                  :width 'normal
+                                  :slant 'normal))))
 #+end_src
 
 ** Set Default Directory to ~$HOME~
@@ -431,7 +453,14 @@ Allows for icon support across many packages.
 
 #+begin_src emacs-lisp
   (use-package all-the-icons
-    :if (display-graphic-p))
+    :if (display-graphic-p)
+    :config
+    (set-fontset-font t 'unicode (font-spec :family "all-the-icons") nil 'append)
+    (set-fontset-font t 'unicode (font-spec :family "file-icons") nil 'append)
+    (set-fontset-font t 'unicode (font-spec :family "Material Icons") nil 'append)
+    (set-fontset-font t 'unicode (font-spec :family "github-octicons") nil 'append)
+    (set-fontset-font t 'unicode (font-spec :family "FontAwesome") nil 'append)
+    (set-fontset-font t 'unicode (font-spec :family "Weather Icons") nil 'append))
 
   ;; This enables all-the-icons in the dired file manager
   (use-package all-the-icons-dired
@@ -772,7 +801,7 @@ tried and true tree-sitter package.
   (use-package lsp-treemacs :commands lsp-treemacs-errors-list)
 #+end_src
 
-** C-Mode & C++-Mode
+** C-Mode && C++-Mode
 
 #+begin_src emacs-lisp
   (defun c-c++-indentation-hook ()
@@ -868,7 +897,7 @@ This is only for the purposes of contributing to and working with other
                            (setq-local evil-shift-width 2)))))))
 #+end_src
 
-** Typescript-Mode 🤮
+** Typescript-Mode 🤢
 
 A necessary evil.
 
