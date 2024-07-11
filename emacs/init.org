@@ -21,57 +21,57 @@
   - [[#linux-specific-macro][Linux-Specific Macro]]
 - [[#straightel-setup][Straight.el Setup]]
   - [[#bootstrap-straight][Bootstrap Straight]]
-  - [[#diminish][Diminish]]
+  - [[#delight][Delight]]
   - [[#general-keybinds][General Keybinds]]
 - [[#misc-setup][Misc Setup]]
   - [[#display-line-numbers-and-enable-soft-wrap][Display Line Numbers and Enable Soft-Wrap]]
+  - [[#enable-electric-pair-mode][Enable Electric-Pair-Mode]]
   - [[#garbage-collector-magic-hack][Garbage Collector Magic Hack]]
   - [[#create-general-keybinds-definer][Create General Keybinds Definer]]
   - [[#miscellaneous-keybinds][Miscellaneous Keybinds]]
-  - [[#sudo-edit][Sudo Edit]]
 - [[#editor][Editor]]
+  - [[#electric-pair-mode][Electric-Pair-Mode]]
   - [[#evil-mode][Evil Mode]]
   - [[#which-key][Which-Key]]
-  - [[#treemacs][Treemacs]]
   - [[#projectile][Projectile]]
+  - [[#multiple-major-modes-with-polymode][Multiple Major Modes with Polymode]]
+- [[#programs][Programs]]
+  - [[#dashboard][Dashboard]]
+  - [[#treemacs][Treemacs]]
   - [[#pdf-tools][PDF-Tools]]
 - [[#appearance][Appearance]]
-  - [[#theme-standard-themes-light-disabled][Theme (Standard-Themes Light, Disabled)]]
   - [[#all-the-icons][All The Icons]]
   - [[#ligatures][Ligatures]]
-  - [[#dashboard][Dashboard]]
   - [[#solaire-mode][Solaire-Mode]]
   - [[#enable-divider-for-resizing-windows][Enable Divider for Resizing Windows]]
   - [[#doom-themes-material-dark][Doom-Themes (Material-Dark)]]
   - [[#doom-modeline][Doom-Modeline]]
   - [[#centaur-tabs][Centaur Tabs]]
+  - [[#tree-sitter][Tree-Sitter]]
 - [[#org-mode][Org-Mode]]
   - [[#disabling-org-indent-mode][Disabling Org-Indent-Mode]]
-  - [[#keybinds][Keybinds]]
+  - [[#org-keybinds][Org Keybinds]]
   - [[#enabling-table-of-contents][Enabling Table of Contents]]
   - [[#enable-org-bullets][Enable Org Bullets]]
   - [[#enable-org-tempo-expansions][Enable Org Tempo Expansions]]
 - [[#completion][Completion]]
   - [[#ivy--counsel][Ivy & Counsel]]
   - [[#company][Company]]
-  - [[#smartparens][Smartparens]]
-  - [[#parinfer][Parinfer]]
+  - [[#yasnippet][Yasnippet]]
 - [[#language-support][Language Support]]
-  - [[#multiple-major-modes-with-polymode][Multiple Major Modes with Polymode]]
-  - [[#tree-sitter][Tree-Sitter]]
   - [[#lsp-mode][LSP-Mode]]
   - [[#c-mode--c-mode][C-Mode && C++-Mode]]
   - [[#rust-mode][Rust-Mode]]
   - [[#python-mode][Python-Mode]]
   - [[#haskell-mode][Haskell-Mode]]
   - [[#lean4-mode][Lean4-Mode]]
-  - [[#idris-mode][Idris-Mode]]
+  - [[#idris2-mode][Idris2-Mode]]
   - [[#meson-mode][Meson-Mode]]
   - [[#cmake-mode][CMake-Mode]]
   - [[#nix-mode][Nix-Mode]]
-  - [[#typescript-mode-][Typescript-Mode 🤢]]
+  - [[#typescript-mode][Typescript-Mode]]
   - [[#svelte-mode][Svelte-Mode]]
-  - [[#latex-auctex--more][Latex (AUCTeX + more)]]
+  - [[#latex-mode-auctex][LaTeX-Mode (AUCTeX)]]
 
 * Prelude
 
@@ -209,14 +209,18 @@ linux-specific.
   (setq straight-use-package-by-default t)
 #+end_src
 
-** Diminish
+** Delight
 
-Diminish allows us to prevent major modes from appearing in the modeline. This
-needs to be loaded in advance as it adds a ~:diminish~ keyword to ~use-package~
-invocations.
+Delight allows us alter the apperance of modes in the modeline. This needs to be
+loaded in advance as it adds a ~:delight~ keyword to ~use-package~ invocations.
 
 #+begin_src emacs-lisp
-  (use-package diminish)
+  (use-package delight
+    :config
+    (delight '((eldoc-mode nil "eldoc")
+               (abbrev-mode nil "abbrev")
+               (flycheck-mode nil "flycheck")
+               (smartparens-mode nil "smartparens"))))
 #+end_src
 
 ** General Keybinds
@@ -237,8 +241,19 @@ each of the following packages will depend on it.
   (add-hook 'text-mode-hook #'display-line-numbers-mode)
   (add-hook 'prog-mode-hook #'display-line-numbers-mode)
   (global-visual-line-mode t)
-  (diminish 'visual-line-mode)
+  (use-package emacs
+    :delight (visual-line-mode))
 #+end_src
+
+** Enable Electric-Pair-Mode
+
+I don't use any of the fancy features of the Smartparens package so I thought I
+would eliminate some bloat by using the built-in pair completion mode as it is
+more than sufficient.
+
+#+begin_src emacs-lisp
+  (electric-pair-mode 1)
+#+end_src>
 
 ** Garbage Collector Magic Hack
 
@@ -253,7 +268,7 @@ and other emacs packages.
     (gcmh-auto-idle-delay-factor 10)
     (gcmh-high-cons-threshold (* 16 1024 1024)) ; 16mb
     :config (gcmh-mode 1)
-    :diminish gcmh-mode)
+    :delight)
 #+end_src
 
 ** Create General Keybinds Definer
@@ -287,19 +302,13 @@ and other emacs packages.
     "t v" '(visual-line-mode :wk "Toggle visual-line-mode"))
 #+end_src
 
-** Sudo Edit
+* Editor
+
+** Electric-Pair-Mode
 
 #+begin_src emacs-lisp
-  (linux-specific!
-   (use-package sudo-edit
-     :config
-     (jawadcode/leader-keys
-       "s" '(:ignore t :wk "Sudo Edit")
-       "s f" '(sudo-edit-find-file :wk "Sudo find file")
-       "s e" '(sudo-edit :wk "Sudo edit file"))))
-  #+end_src
-
-* Editor
+  (electric-pair-mode 1)
+#+end_src
 
 ** Evil Mode
 
@@ -338,7 +347,7 @@ Vim keybinds in emacs because why not.
     :after evil
     :custom (evil-collection-mode-list '(dashboard dired ibuffer))
     :config (evil-collection-init)
-    :diminish evil-collection-unimpaired-mode)
+    :delight evil-collection-unimpaired-mode)
 
   (use-package evil-anzu :after evil)
 
@@ -356,7 +365,64 @@ keybind is pressed.
     :custom
     (which-key-add-column-padding 3)
     (which-key-idle-delay 0.1)
-    :diminish which-key-mode)
+    :delight)
+#+end_src
+
+** Projectile
+
+This allows us to manage projects and integrates with lsp-mode as well as
+treemacs.
+
+#+begin_src emacs-lisp
+  (use-package projectile
+    :config
+    (projectile-mode 1)
+    (jawadcode/leader-keys
+      "p" '(projectile-command-map :wk "Projectile"))
+    :delight '(:eval (concat " " (projectile-project-name))))
+#+end_src
+
+** Multiple Major Modes with Polymode
+
+This allows us to have language support within codeblocks.
+
+#+begin_src emacs-lisp
+  (use-package poly-org)
+#+end_src
+
+* Programs
+
+** Dashboard
+
+This package shows a dashboard on startup, getting rid of that hideous default
+one. It includes useful links to recent files as well as projects, and most
+importantly, it has a better emacs logo.
+
+#+begin_src emacs-lisp
+  (use-package dashboard
+    :if (< (length command-line-args) 2)
+    :after (all-the-icons projectile)
+    :init
+    (setq initial-buffer-choice 'dashboard-open)
+    (setq dashboard-startup-banner 'logo)
+    (setq dashboard-icon-type 'all-the-icons)
+    (setq dashboard-projects-backend 'projectile)
+    (setq dashboard-center-content t)
+    (setq dashboard-set-heading-icons t)
+    (setq dashboard-set-file-icons t)
+    (setq dashboard-startupify-list '(dashboard-insert-banner
+                                      dashboard-insert-newline
+                                      dashboard-insert-banner-title
+                                      dashboard-insert-newline
+                                      dashboard-insert-navigator
+                                      dashboard-insert-newline
+                                      dashboard-insert-init-info
+                                      dashboard-insert-items))
+    (setq dashboard-items '((recents   . 6)
+                            (projects  . 6)
+                            (bookmarks . 6)))
+    :config
+    (dashboard-setup-startup-hook))
 #+end_src
 
 ** Treemacs
@@ -381,20 +447,6 @@ This is a file-tree view that can be opened to the left side of any code buffers
   (use-package treemacs-tab-bar :after treemacs)
 #+end_src
 
-** Projectile
-
-This allows us to manage projects and integrates with lsp-mode as well as
-treemacs.
-
-#+begin_src emacs-lisp
-  (use-package projectile
-    :config
-    (projectile-mode 1)
-    (jawadcode/leader-keys
-      "p" '(projectile-command-map :wk "Projectile"))
-    :diminish projectile-mode)
-#+end_src
-
 ** PDF-Tools
 
 A PDF viewer.
@@ -414,38 +466,6 @@ A PDF viewer.
 #+end_src
 
 * Appearance
-
-** Theme (Standard-Themes Light, Disabled)
-
-#+begin_src emacs-lisp :tangle no
-  (use-package standard-themes
-    :custom
-    ;; Read the doc string of each of those user options.  These are some
-    ;; sample values.
-    (standard-themes-bold-constructs t)
-    (standard-themes-italic-constructs t)
-    (standard-themes-disable-other-themes t)
-    (standard-themes-mixed-fonts t)
-    (standard-themes-variable-pitch-ui t)
-    (standard-themes-prompts '(extrabold italic))
-    ;; more complex alist to set weight, height, and optional
-    ;; `variable-pitch' per heading level (t is for any level not
-    ;; specified):
-    (standard-themes-headings
-     '((0 . (variable-pitch light 1.8))
-       (1 . (variable-pitch light 1.7))
-       (2 . (variable-pitch light 1.6))
-       (3 . (variable-pitch semilight 1.5))
-       (4 . (variable-pitch semilight 1.4))
-       (5 . (variable-pitch 1.3))
-       (6 . (variable-pitch 1.2))
-       (7 . (variable-pitch 1.1))
-       (agenda-date . (1.2))
-       (agenda-structure . (variable-pitch light 1.7))
-       (t . (variable-pitch 1.0))))
-    :config
-    (standard-themes-load-light)) ; OR (standard-themes-load-dark))
-#+end_src
 
 ** All The Icons
 
@@ -494,38 +514,6 @@ Allows for icon support across many packages.
     (global-ligature-mode t))
 #+end_src
 
-** Dashboard
-
-This package shows a dashboard on startup, getting rid of that hideous default
-one. It includes useful links to recent files as well as projects, and most
-importantly, it has a better emacs logo.
-
-#+begin_src emacs-lisp
-  (use-package dashboard
-    :after (all-the-icons projectile)
-    :init
-    (setq initial-buffer-choice 'dashboard-open)
-    (setq dashboard-startup-banner 'logo)
-    (setq dashboard-icon-type 'all-the-icons)
-    (setq dashboard-projects-backend 'projectile)
-    (setq dashboard-center-content t)
-    (setq dashboard-set-heading-icons t)
-    (setq dashboard-set-file-icons t)
-    (setq dashboard-startupify-list '(dashboard-insert-banner
-                                      dashboard-insert-newline
-                                      dashboard-insert-banner-title
-                                      dashboard-insert-newline
-                                      dashboard-insert-navigator
-                                      dashboard-insert-newline
-                                      dashboard-insert-init-info
-                                      dashboard-insert-items))
-    (setq dashboard-items '((recents   . 6)
-                            (projects  . 6)
-                            (bookmarks . 6)))
-    :config
-    (dashboard-setup-startup-hook))
-#+end_src
-
 ** Solaire-Mode
 
 Distinguishes code buffers from other buffers. Idk if this is even working but
@@ -558,7 +546,9 @@ once again, I can't be bothered checking.
 
 ** Doom-Modeline
 
-#+begin_src emacs-lisp
+Causes performance issues for some reason.
+
+#+begin_src emacs-lisp :tangle no
   (use-package nerd-icons)
   (use-package doom-modeline
     :ensure t
@@ -580,6 +570,25 @@ once again, I can't be bothered checking.
     ("C-S-<tab>" . centaur-tabs-forward))
 #+end_src
 
+** Tree-Sitter
+
+Tree-sitter is a highly performant parser "framework" that can be used for syntax
+highlighting. Tree-sitter functionality is actually built into Emacs 29+, however
+its a complete pain in the arse to setup and maintain, so I'm resorting to the
+tried and true tree-sitter package.
+
+#+begin_src emacs-lisp
+  (use-package tree-sitter
+    :after tree-sitter-langs
+    :config
+    (require 'tree-sitter-langs)
+    (global-tree-sitter-mode)
+    (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
+    :delight)
+
+  (use-package tree-sitter-langs)
+#+end_src
+
 * Org-Mode
 
 ** Disabling Org-Indent-Mode
@@ -588,7 +597,7 @@ once again, I can't be bothered checking.
   (setq org-indent-mode nil)
 #+end_src
 
-** Keybinds
+** Org Keybinds
 
 #+begin_src emacs-lisp
   ;; Org-mode keybinds
@@ -665,12 +674,12 @@ Ivy-rich adds descriptions alongside commands in M-x.
       "i"   '(:ignore t :wk "Ivy")
       "i r" '(ivy-resume :wk "Resume previous Ivy completion")
       "i b" '(ivy-switch-buffer-other-window :wk "Switch to another buffer in another window"))
-    :diminish ivy-mode)
+    :delight)
 
   (use-package counsel
     :after ivy
     :config (counsel-mode)
-    :diminish counsel-mode)
+    :delight)
 
   ;; Adds bling to our ivy completions
   (use-package ivy-rich
@@ -705,74 +714,24 @@ Company is a completion framework for text-mode.
     (define-key company-active-map (kbd "M-k") #'company-select-previous)
     (define-key company-active-map (kbd "<tab>") #'company-complete-selection)
     (global-company-mode)
-    (diminish 'company-capf-mode)
-    :diminish company-mode)
+    (delight 'company-capf-mode)
+    :delight)
 
   (use-package company-box
     :after company
     :hook (company-mode . company-box-mode)
-    :diminish company-box-mode)
+    :delight)
 #+end_src
 
-** Smartparens
-
-Smartparens provides the automatic closing of pairs.
+** Yasnippet
 
 #+begin_src emacs-lisp
-  (use-package smartparens-mode
-    :straight smartparens
-    :hook (prog-mode text-mode markdown-mode)
-    :config (require 'smartparens-config)
-    :diminish smartparens-mode)
+  (use-package yasnippet
+    :config (yas-global-mode 1)
+    :delight yas-minor-mode)
 #+end_src
-
-** Parinfer
-
-+Parinfer handles the automatic inference of closing parentheses when writing
-lisp, and aims to make the experience much like that of writing python.+
-+It's a little more complex than smartparens in that it can use indentation and
-deletion to determine where parentheses should go+
-
-This package makes editing emacs lisp miserable due to the constant errors,
-I'm done with it. I think the issue might be ~org-mode~ but I won't bother
-making sure.
-
-#+begin_src emacs-lisp :tangle no
-  (use-package parinfer-rust-mode
-    :hook emacs-lisp-mode ; TODO: Add racket
-    :config
-    ;; Smartparens conflicts with indent-tabs-mode so it has to be disabled
-    (setq-default indent-tabs-mode nil))
-#+end_src
-
 
 * Language Support
-
-** Multiple Major Modes with Polymode
-
-This allows us to have language support within codeblocks.
-
-#+begin_src emacs-lisp
-  (use-package poly-org)
-#+end_src
-
-** Tree-Sitter
-
-Tree-sitter is a highly performant parser "framework" that can be used for syntax
-highlighting. Tree-sitter functionality is actually built into Emacs 29+, however
-its a complete pain in the arse to setup and maintain, so I'm resorting to the
-tried and true tree-sitter package.
-
-#+begin_src emacs-lisp
-  (use-package tree-sitter
-    :after tree-sitter-langs
-    :config
-    (require 'tree-sitter-langs)
-    (global-tree-sitter-mode)
-    (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
-
-  (use-package tree-sitter-langs)
-#+end_src
 
 ** LSP-Mode
 
@@ -794,7 +753,7 @@ tried and true tree-sitter package.
     (evil-define-key 'normal lsp-mode-map (kbd "SPC l") lsp-command-map)
     (setq lsp-inlay-hint-enable t)
     :commands lsp
-    :diminish flymake-mode)
+    :delight flymake-mode)
 
   (use-package lsp-ui :commands lsp-ui-mode)
   (use-package lsp-ivy :commands lsp-ivy-workspace-symbol)
@@ -802,6 +761,8 @@ tried and true tree-sitter package.
 #+end_src
 
 ** C-Mode && C++-Mode
+
+C is for novelty and C++ for testing my mental fortitude.
 
 #+begin_src emacs-lisp
   (defun c-c++-indentation-hook ()
@@ -813,6 +774,8 @@ tried and true tree-sitter package.
 #+end_src
 
 ** Rust-Mode
+
+Evolve to 🦀.
 
 #+begin_src emacs-lisp
   (use-package rust-mode :commands rust-mode)
@@ -829,7 +792,7 @@ tried and true tree-sitter package.
 
 ** Haskell-Mode
 
-I ~<$>~ love ~>>>~ reading ~>>=~ Haskell ~$~ code.
+I love me some Zygohistomorphic Prepromorphisms.
 
 #+begin_src emacs-lisp
   (use-package lsp-haskell
@@ -840,7 +803,7 @@ I ~<$>~ love ~>>>~ reading ~>>=~ Haskell ~$~ code.
 
 ** Lean4-Mode
 
-I love lean.
+I love lean 💜.
 
 #+begin_src emacs-lisp
   (use-package lean4-mode
@@ -851,10 +814,10 @@ I love lean.
     :commands lean4-mode)
 #+end_src
 
-** Idris-Mode
+** Idris2-Mode
 
-Doesn't support Windows, probably won't for a while considering it's still mostly
-an academic endeavour.
+The simplicity of Coq combined with the usability of Haskell. Currently no
+windows support.
 
 #+begin_src emacs-lisp
   (linux-specific!
@@ -875,14 +838,15 @@ The only usable C/C++ build system.
 
 ** CMake-Mode
 
-This is only for the purposes of contributing to and working with other
-[unenlightened] peoples' projects.
+Only for working on the projects of other unenlightened people.
 
 #+begin_src emacs-lisp
   (use-package cmake-mode :commands cmake-mode)
 #+end_src
 
 ** Nix-Mode
+
+I hate this thing, it's like a brain parasite.
 
 #+begin_src emacs-lisp
   (linux-specific!
@@ -897,9 +861,9 @@ This is only for the purposes of contributing to and working with other
                            (setq-local evil-shift-width 2)))))))
 #+end_src
 
-** Typescript-Mode 🤢
+** Typescript-Mode
 
-A necessary evil.
+Gotta work on webshit from time to time.
 
 #+begin_src emacs-lisp
   (use-package typescript-mode)
@@ -915,15 +879,10 @@ I refuse to learn React.
            (svelte-mode . (lambda () (tree-sitter-hl-mode -1)))))
 #+end_src
 
-** Latex (AUCTeX + more)
+** LaTeX-Mode (AUCTeX)
 
-LaTeX is miserable to write without a billion different plugins, so naturally
-I'm just copying the ones that doom emacs uses and configuring to my liking.
-
-Tangling for the following codeblock is disabled right now, as it is incomplete
-and will be a bit of an undertaking to get this working reliably and add my own
-customisations (i.e. not just blindly copying doom emacs), likely requiring a
-bit of experimentation.
+This definitely hasn't taken weeks and weeks of refinement and iteration to
+bring to a barely usable state.
 
 #+begin_src emacs-lisp
   (use-package latex

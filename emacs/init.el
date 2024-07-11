@@ -1,24 +1,46 @@
 ;;; init.el --- Personal configuration -*- lexical-binding: t -*-
 
-(set-face-attribute 'default nil
-                    :font "Iosevka Term SS07"
-                    :height 135
-                    :weight 'regular)
+(set-face-font 'default
+               (font-spec :family "Iosevka Term SS07"
+                          :size 13.5
+                          :weight 'normal
+                          :width 'normal
+                          :slant 'normal))
+(set-face-font 'fixed-pitch
+               (font-spec :family "Iosevka Term SS07"
+                          :size 13.5
+                          :weight 'normal
+                          :width 'normal
+                          :slant 'normal))
 (pcase system-type
-  ('windows-nt
-   (set-face-attribute 'variable-pitch nil
-                       :font "Segoe UI"
-                       :height 135
-                       :weight 'regular))
   ('gnu/linux
-   (set-face-attribute 'variable-pitch nil
-                       :font "sans-serif"
-                       :height 135
-                       :weight 'regular)))
-(set-face-attribute 'fixed-pitch nil
-                    :font "Iosevka Term SS07"
-                    :height 135
-                    :weight 'regular)
+   (set-face-font 'variable-pitch
+                  (font-spec :family "sans-serif"
+                             :size 13.5
+                             :weight 'normal
+                             :width 'normal
+                             :slant 'normal))
+   (set-fontset-font t
+                     'emoji
+                     (font-spec :family "Noto Color Emoji"
+                                :size 13.5
+                                :weight 'normal
+                                :width 'normal
+                                :slant 'normal)))
+  ('windows-nt
+   (set-face-font 'variable-pitch
+                  (font-spec :family "Segoe UI"
+                             :size 13.5
+                             :weight 'normal
+                             :width 'normal
+                             :slant 'normal))
+   (set-fontset-font t
+                     'emoji
+                     (font-spec :family "Segoe UI Emoji"
+                                :size 13.5
+                                :weight 'normal
+                                :width 'normal
+                                :slant 'normal))))
 
 (setq default-directory (concat (getenv "HOME") "/"))
 
@@ -59,14 +81,20 @@
 (straight-use-package 'use-package)
 (setq straight-use-package-by-default t)
 
-(use-package diminish)
+(use-package delight
+  :config
+  (delight '((eldoc-mode nil "eldoc")
+             (abbrev-mode nil "abbrev")
+             (flycheck-mode nil "flycheck")
+             (smartparens-mode nil "smartparens"))))
 
 (use-package general :config (general-evil-setup))
 
 (add-hook 'text-mode-hook #'display-line-numbers-mode)
 (add-hook 'prog-mode-hook #'display-line-numbers-mode)
 (global-visual-line-mode t)
-(diminish 'visual-line-mode)
+(use-package emacs
+  :delight (visual-line-mode))
 
 (use-package gcmh
   :custom
@@ -75,7 +103,7 @@
   (gcmh-auto-idle-delay-factor 10)
   (gcmh-high-cons-threshold (* 16 1024 1024)) ; 16mb
   :config (gcmh-mode 1)
-  :diminish gcmh-mode)
+  :delight)
 
 (general-create-definer jawadcode/leader-keys
   :states '(normal insert visual emacs)
@@ -100,13 +128,7 @@
   "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
   "t v" '(visual-line-mode :wk "Toggle visual-line-mode"))
 
-(linux-specific!
- (use-package sudo-edit
-   :config
-   (jawadcode/leader-keys
-     "s" '(:ignore t :wk "Sudo Edit")
-     "s f" '(sudo-edit-find-file :wk "Sudo find file")
-     "s e" '(sudo-edit :wk "Sudo edit file"))))
+(electric-pair-mode 1)
 
 (use-package evil
   :custom
@@ -140,7 +162,7 @@
   :after evil
   :custom (evil-collection-mode-list '(dashboard dired ibuffer))
   :config (evil-collection-init)
-  :diminish evil-collection-unimpaired-mode)
+  :delight evil-collection-unimpaired-mode)
 
 (use-package evil-anzu :after evil)
 
@@ -151,7 +173,41 @@
   :custom
   (which-key-add-column-padding 3)
   (which-key-idle-delay 0.1)
-  :diminish which-key-mode)
+  :delight)
+
+(use-package projectile
+  :config
+  (projectile-mode 1)
+  (jawadcode/leader-keys
+    "p" '(projectile-command-map :wk "Projectile"))
+  :delight '(:eval (concat " " (projectile-project-name))))
+
+(use-package poly-org)
+
+(use-package dashboard
+  :if (< (length command-line-args) 2)
+  :after (all-the-icons projectile)
+  :init
+  (setq initial-buffer-choice 'dashboard-open)
+  (setq dashboard-startup-banner 'logo)
+  (setq dashboard-icon-type 'all-the-icons)
+  (setq dashboard-projects-backend 'projectile)
+  (setq dashboard-center-content t)
+  (setq dashboard-set-heading-icons t)
+  (setq dashboard-set-file-icons t)
+  (setq dashboard-startupify-list '(dashboard-insert-banner
+                                    dashboard-insert-newline
+                                    dashboard-insert-banner-title
+                                    dashboard-insert-newline
+                                    dashboard-insert-navigator
+                                    dashboard-insert-newline
+                                    dashboard-insert-init-info
+                                    dashboard-insert-items))
+  (setq dashboard-items '((recents   . 6)
+                          (projects  . 6)
+                          (bookmarks . 6)))
+  :config
+  (dashboard-setup-startup-hook))
 
 (use-package treemacs-all-the-icons :defer t :commands treemacs-all-the-icons)
 
@@ -169,27 +225,27 @@
 
 (use-package treemacs-tab-bar :after treemacs)
 
-(use-package projectile
-  :config
-  (projectile-mode 1)
-  (jawadcode/leader-keys
-    "p" '(projectile-command-map :wk "Projectile"))
-  :diminish projectile-mode)
-
 (linux-specific!
  (use-package pdf-tools
    :mode ("\\.pdf\\'" . pdf-view-mode)
    :config
    (setq-default pdf-view-display-size 'fit-width)
    (setq pdf-view-use-scaling t
-	 pdf-view-use-imagemagick nil)
+	   pdf-view-use-imagemagick nil)
    (add-hook 'pdf-view-mode-hook
-	     (lambda ()
-	   (setq-local evil-normal-state-cursor (list nil))))
+	       (lambda ()
+		 (setq-local evil-normal-state-cursor (list nil))))
    (evil-make-overriding-map pdf-view-mode-map 'normal)))
 
 (use-package all-the-icons
-  :if (display-graphic-p))
+  :if (display-graphic-p)
+  :config
+  (set-fontset-font t 'unicode (font-spec :family "all-the-icons") nil 'append)
+  (set-fontset-font t 'unicode (font-spec :family "file-icons") nil 'append)
+  (set-fontset-font t 'unicode (font-spec :family "Material Icons") nil 'append)
+  (set-fontset-font t 'unicode (font-spec :family "github-octicons") nil 'append)
+  (set-fontset-font t 'unicode (font-spec :family "FontAwesome") nil 'append)
+  (set-fontset-font t 'unicode (font-spec :family "Weather Icons") nil 'append))
 
 ;; This enables all-the-icons in the dired file manager
 (use-package all-the-icons-dired
@@ -218,30 +274,6 @@
   ;; per mode with `ligature-mode'.
   (global-ligature-mode t))
 
-(use-package dashboard
-  :after (all-the-icons projectile)
-  :init
-  (setq initial-buffer-choice 'dashboard-open)
-  (setq dashboard-startup-banner 'logo)
-  (setq dashboard-icon-type 'all-the-icons)
-  (setq dashboard-projects-backend 'projectile)
-  (setq dashboard-center-content t)
-  (setq dashboard-set-heading-icons t)
-  (setq dashboard-set-file-icons t)
-  (setq dashboard-startupify-list '(dashboard-insert-banner
-                                    dashboard-insert-newline
-                                    dashboard-insert-banner-title
-                                    dashboard-insert-newline
-                                    dashboard-insert-navigator
-                                    dashboard-insert-newline
-                                    dashboard-insert-init-info
-                                    dashboard-insert-items))
-  (setq dashboard-items '((recents   . 6)
-                          (projects  . 6)
-                          (bookmarks . 6)))
-  :config
-  (dashboard-setup-startup-hook))
-
 (use-package solaire-mode :config (solaire-global-mode +1))
 
 (window-divider-mode)
@@ -257,11 +289,6 @@
   (doom-themes-visual-bell-config)
   (doom-themes-org-config))
 
-(use-package nerd-icons)
-(use-package doom-modeline
-  :ensure t
-  :init (doom-modeline-mode 1))
-
 (use-package centaur-tabs
   :after (all-the-icons)
   :config
@@ -272,6 +299,16 @@
   :bind
   ("C-<tab>"   . centaur-tabs-backward)
   ("C-S-<tab>" . centaur-tabs-forward))
+
+(use-package tree-sitter
+  :after tree-sitter-langs
+  :config
+  (require 'tree-sitter-langs)
+  (global-tree-sitter-mode)
+  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
+  :delight)
+
+(use-package tree-sitter-langs)
 
 (setq org-indent-mode nil)
 
@@ -319,12 +356,12 @@
     "i"   '(:ignore t :wk "Ivy")
     "i r" '(ivy-resume :wk "Resume previous Ivy completion")
     "i b" '(ivy-switch-buffer-other-window :wk "Switch to another buffer in another window"))
-  :diminish ivy-mode)
+  :delight)
 
 (use-package counsel
   :after ivy
   :config (counsel-mode)
-  :diminish counsel-mode)
+  :delight)
 
 ;; Adds bling to our ivy completions
 (use-package ivy-rich
@@ -353,30 +390,17 @@
   (define-key company-active-map (kbd "M-k") #'company-select-previous)
   (define-key company-active-map (kbd "<tab>") #'company-complete-selection)
   (global-company-mode)
-  (diminish 'company-capf-mode)
-  :diminish company-mode)
+  (delight 'company-capf-mode)
+  :delight)
 
 (use-package company-box
   :after company
   :hook (company-mode . company-box-mode)
-  :diminish company-box-mode)
+  :delight)
 
-(use-package smartparens-mode
-  :straight smartparens
-  :hook (prog-mode text-mode markdown-mode)
-  :config (require 'smartparens-config)
-  :diminish smartparens-mode)
-
-(use-package poly-org)
-
-(use-package tree-sitter
-  :after tree-sitter-langs
-  :config
-  (require 'tree-sitter-langs)
-  (global-tree-sitter-mode)
-  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
-
-(use-package tree-sitter-langs)
+(use-package yasnippet
+  :config (yas-global-mode 1)
+  :delight yas-minor-mode)
 
 (use-package lsp-mode
   ;; :hook ((rust-mode          . lsp)
@@ -395,7 +419,7 @@
   (evil-define-key 'normal lsp-mode-map (kbd "SPC l") lsp-command-map)
   (setq lsp-inlay-hint-enable t)
   :commands lsp
-  :diminish flymake-mode)
+  :delight flymake-mode)
 
 (use-package lsp-ui :commands lsp-ui-mode)
 (use-package lsp-ivy :commands lsp-ivy-workspace-symbol)
@@ -430,8 +454,8 @@
 (linux-specific!
  (use-package idris2-mode
    :straight (idris2-mode
-	  :host github
-	  :repo "idris-community/idris2-mode")
+		:host github
+		:repo "idris-community/idris2-mode")
    :commands idris2-mode))
 
 (use-package meson-mode :commands meson-mode)
@@ -566,48 +590,48 @@
      (add-to-list 'TeX-view-program-selection '(output-pdf "PDF Tools"))
      (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)))
 
-  (add-hook 'tex-mode-local-vars-hook #'lsp)
-  (add-hook 'latex-mode-local-vars-hook #'lsp)
+	(add-hook 'tex-mode-local-vars-hook #'lsp)
+	(add-hook 'latex-mode-local-vars-hook #'lsp)
 
-  (require 'tex-fold)
-  (add-hook 'LaTeX-mode-hook #'TeX-fold-mode)
-  (require 'preview)
-  (add-hook 'LaTeX-mode-hook #'LaTeX-preview-setup))
+	(require 'tex-fold)
+	(add-hook 'LaTeX-mode-hook #'TeX-fold-mode)
+	(require 'preview)
+	(add-hook 'LaTeX-mode-hook #'LaTeX-preview-setup))
 
 (use-package auctex-latexmk
-  :after latex
-  :hook (LaTeX-mode . (lambda () (setq TeX-command-default "LatexMk")))
-  :init (setq auctex-latexmk-inherit-TeX-PDF-mode t)
-  :config (auctex-latexmk-setup))
+	:after latex
+	:hook (LaTeX-mode . (lambda () (setq TeX-command-default "LatexMk")))
+	:init (setq auctex-latexmk-inherit-TeX-PDF-mode t)
+	:config (auctex-latexmk-setup))
 (use-package evil-tex
-  :after latex
-  :hook (LaTeX-mode . evil-tex-mode))
+	:after latex
+	:hook (LaTeX-mode . evil-tex-mode))
 (use-package cdlatex
-  :after latex
-  :hook ((LaTeX-mode . cdlatex-mode)
-	     (org-mode   . org-cdlatex-mode))
-  :config (setq cdlatex-use-dollar-to-ensure-math nil))
+	:after latex
+	:hook ((LaTeX-mode . cdlatex-mode)
+	       (org-mode   . org-cdlatex-mode))
+	:config (setq cdlatex-use-dollar-to-ensure-math nil))
 
 (use-package company-auctex
-  :after latex
-  :config (company-auctex-init))
+	:after latex
+	:config (company-auctex-init))
 
 (use-package company-reftex
-  :after latex
-  :config
-  (add-hook 'TeX-mode-hook
-		(lambda ()
-		  (setq-local company-backends
-			  (append
-				'(company-reftex-labels company-reftex-citations)
+	:after latex
+	:config
+	(add-hook 'TeX-mode-hook
+		  (lambda ()
+		    (setq-local company-backends
+				(append
+				  '(company-reftex-labels company-reftex-citations)
                                 company-backends)))))
 
 (use-package company-math
-  :after latex
-  :config
-  (add-hook 'TeX-mode-hook
-		(lambda ()
-		  (setq-local company-backends
-			  (append
-				'(company-math-symbols-latex company-math-symbols-unicode company-latex-commands)
-				company-backends)))))
+	:after latex
+	:config
+	(add-hook 'TeX-mode-hook
+		  (lambda ()
+		    (setq-local company-backends
+				(append
+				  '(company-math-symbols-latex company-math-symbols-unicode company-latex-commands)
+				  company-backends)))))

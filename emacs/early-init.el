@@ -8,30 +8,16 @@
       inhibit-startup-screen t
       warning-minimum-level :error)
 
+(set-language-environment "UTF-8")
+(setq default-input-method nil) ; Undoes `set-language-environment`'s changes
+;; Windows uses UTF-16 for its clipboard, so let emacs do its own thing here
+(if (not (eq system-type 'windows-nt))
+	(setq default-input-method 'utf-8))
+
 (setenv "LSP_USE_PLISTS" "true")
 
-(setq ;; menu-bar-mode nil
+(setq menu-bar-mode nil
       tool-bar-mode nil
       scroll-bar-mode nil
       column-number-mode t)
-
-(set-face-attribute 'default nil
-                    :font "Iosevka Term SS07"
-                    :height 135
-                    :weight 'regular)
-(pcase system-type
-  ('windows-nt
-   (set-face-attribute 'variable-pitch nil
-                       :font "Segoe UI"
-                       :height 135
-                       :weight 'regular))
-  ('gnu/linux
-   (set-face-attribute 'variable-pitch nil
-                       :font "sans-serif"
-                       :height 135
-                       :weight 'regular)))
-(set-face-attribute 'fixed-pitch nil
-                    :font "Iosevka Term SS07"
-                    :height 135
-                    :weight 'regular)
 
