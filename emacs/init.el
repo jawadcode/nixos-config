@@ -1,57 +1,36 @@
 ;;; init.el --- Personal configuration -*- lexical-binding: t -*-
 
 (set-face-font 'default
-               (font-spec :family "Iosevka Term SS07"
-                          :size 13.5
-                          :weight 'normal
-                          :width 'normal
-                          :slant 'normal))
+        (font-spec :family "Iosevka Term SS07"
+            :size 13.5
+            :weight 'normal
+            :width 'normal
+            :slant 'normal))
 (set-face-font 'fixed-pitch
-               (font-spec :family "Iosevka Term SS07"
-                          :size 13.5
-                          :weight 'normal
-                          :width 'normal
-                          :slant 'normal))
-(pcase system-type
-  ('gnu/linux
-   (set-face-font 'variable-pitch
-                  (font-spec :family "sans-serif"
-                             :size 13.5
-                             :weight 'normal
-                             :width 'normal
-                             :slant 'normal))
-   (set-fontset-font t
-                     'emoji
-                     (font-spec :family "Noto Color Emoji"
-                                :size 13.5
-                                :weight 'normal
-                                :width 'normal
-                                :slant 'normal)))
-  ('windows-nt
-   (set-face-font 'variable-pitch
-                  (font-spec :family "Segoe UI"
-                             :size 13.5
-                             :weight 'normal
-                             :width 'normal
-                             :slant 'normal))
-   (set-fontset-font t
-                     'emoji
-                     (font-spec :family "Segoe UI Emoji"
-                                :size 13.5
-                                :weight 'normal
-                                :width 'normal
-                                :slant 'normal))))
+        (font-spec :family "Iosevka Term SS07"
+            :size 13.5
+            :weight 'normal
+            :width 'normal
+            :slant 'normal))
+(set-face-font 'variable-pitch
+        (font-spec :family "Roboto"
+            :size 13.5
+            :weight 'normal
+            :width 'normal))
+(set-fontset-font t
+        'emoji
+        (font-spec :family "Noto Color Emoji"
+              :size 13.5
+              :weight 'normal
+              :width 'normal
+              :slant 'normal))
 
-(setq default-directory (concat (getenv "HOME") "/"))
+(scroll-bar-mode -1)
 
-(setq backup-directory-alist `((".*" . ,temporary-file-directory)))
-
-(setq custom-file (concat user-emacs-directory "custom.el"))
-
-(global-set-key (kbd "C-+") 'text-scale-increase)
-(global-set-key (kbd "C--") 'text-scale-decrease)
-(global-set-key (kbd "<C-wheel-up>") 'text-scale-increase)
-(global-set-key (kbd "<C-wheel-down>") 'text-scale-decrease)
+(keymap-global-set "C-+"            #'text-scale-increase)
+(keymap-global-set "C--"            #'text-scale-decrease)
+(keymap-global-set "C-<wheel-up>"   #'text-scale-increase)
+(keymap-global-set "C-<wheel-down>" #'text-scale-decrease)
 
 (indent-tabs-mode -1)
 (setq-default tab-width 4)
@@ -81,12 +60,17 @@
 (straight-use-package 'use-package)
 (setq straight-use-package-by-default t)
 
+(use-package f)
+
+(setq default-directory (f-slash (getenv "HOME")))
+(setq backup-directory-alist `((".*" . ,temporary-file-directory)))
+(setq custom-file (f-join user-emacs-directory "custom.el"))
+
 (use-package delight
   :config
   (delight '((eldoc-mode nil "eldoc")
              (abbrev-mode nil "abbrev")
-             (flycheck-mode nil "flycheck")
-             (smartparens-mode nil "smartparens"))))
+             (flycheck-mode nil "flycheck"))))
 
 (use-package general :config (general-evil-setup))
 
@@ -111,22 +95,21 @@
   :prefix "SPC"
   :global-prefix "M-SPC")
 
-;; Miscellaneous keybinds
 (jawadcode/leader-keys
-  "SPC" '(find-file :wk "Find file")
-  "f"   '(:ignore t :wk "File")
+  ;; File keybinds
+  "f"   '(:ignore t       :wk "File")
+  "f f" '(find-file       :wk "Find and open file")
   "f r" '(counsel-recentf :wk "Find recent files")
-  "f c" '((lambda () (interactive) (find-file "~/.config/emacs/init.org")) :wk "Open emacs config")
+  "f c" '((lambda ()
+            (interactive)
+            (find-file
+             (f-join user-emacs-directory "init.org")))
+          :wk "Open emacs config")
   ";"   '(comment-line :wk "Comment lines")
   ;; Help keybinds
-  "h" '(:ignore t :wk "Help")
+  "h"   '(:ignore t         :wk "Help")
   "h f" '(describe-function :wk "Describe function")
-  "h v" '(describe-variable :wk "Describe variable")
-  "h r" '((lambda () (interactive) (load-file user-init-file) (load-file user-init-file)) :wk "Reload config")
-  ;; Toggle keybinds
-  "t"   '(:ignore t :wk "Toggle")
-  "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
-  "t v" '(visual-line-mode :wk "Toggle visual-line-mode"))
+  "h v" '(describe-variable :wk "Describe variable"))
 
 (electric-pair-mode 1)
 
@@ -136,28 +119,19 @@
   (evil-want-keybinding nil)
   (evil-vsplit-window-right t)
   (evil-split-window-below t)
-  :init
   :config
   (evil-set-undo-system 'undo-redo)
   (evil-mode 1)
   (jawadcode/leader-keys
-    "w"   '(:ignore t :wk "Windows")
-
+    "w"   '(:ignore t :wk "Window")
     ;; Window splits
     "w x" '(evil-window-delete :wk "Close window")
-    "w n" '(evil-window-new :wk "New horizontal window")
-    "w m" '(evil-window-vnew :wk "New vertical window")
-    "w h" '(evil-window-split :wk "Horizontal split window")
-    "w v" '(evil-window-vsplit :wk "Vertical split window")
+    "w n" '(evil-window-new    :wk "New horizontal window")
+    "w m" '(evil-window-vnew   :wk "New vertical window")
+    "w h" '(evil-window-split  :wk "Horizontal split window")
+    "w v" '(evil-window-vsplit :wk "Vertical split window")))
 
-    ;; Window motions
-    "w h" '(evil-window-left :wk "Window left")
-    "w j" '(evil-window-down :wk "Window down")
-    "w k" '(evil-window-up :wk "Window up")
-    "w l" '(evil-window-right :wk "Window right")
-    "w w" '(evil-window-next :wk "Goto next window")))
-
-;; Extra evil stuff
+;; Extra evil
 (use-package evil-collection
   :after evil
   :custom (evil-collection-mode-list '(dashboard dired ibuffer))
@@ -169,17 +143,16 @@
 (use-package evil-tutor)
 
 (use-package which-key
-  :init (which-key-mode 1)
   :custom
   (which-key-add-column-padding 3)
   (which-key-idle-delay 0.1)
+  :config (which-key-mode 1)
   :delight)
 
 (use-package projectile
   :config
   (projectile-mode 1)
-  (jawadcode/leader-keys
-    "p" '(projectile-command-map :wk "Projectile"))
+  (jawadcode/leader-keys "p" projectile-command-map)
   :delight '(:eval (concat " " (projectile-project-name))))
 
 (use-package poly-org)
@@ -188,22 +161,22 @@
   :if (< (length command-line-args) 2)
   :after (all-the-icons projectile)
   :init
-  (setq initial-buffer-choice 'dashboard-open)
-  (setq dashboard-startup-banner 'logo)
-  (setq dashboard-icon-type 'all-the-icons)
-  (setq dashboard-projects-backend 'projectile)
-  (setq dashboard-center-content t)
-  (setq dashboard-set-heading-icons t)
-  (setq dashboard-set-file-icons t)
-  (setq dashboard-startupify-list '(dashboard-insert-banner
+  (setq initial-buffer-choice 'dashboard-open
+        dashboard-startup-banner 'logo
+        dashboard-icon-type 'all-the-icons
+        dashboard-projects-backend 'projectile
+        dashboard-center-content t
+        dashboard-set-heading-icons t
+        dashboard-set-file-icons t
+        dashboard-startupify-list '(dashboard-insert-banner
                                     dashboard-insert-newline
                                     dashboard-insert-banner-title
                                     dashboard-insert-newline
                                     dashboard-insert-navigator
                                     dashboard-insert-newline
                                     dashboard-insert-init-info
-                                    dashboard-insert-items))
-  (setq dashboard-items '((recents   . 6)
+                                    dashboard-insert-items)
+        dashboard-items '((recents   . 6)
                           (projects  . 6)
                           (bookmarks . 6)))
   :config
@@ -213,9 +186,8 @@
 
 (use-package treemacs
   :config
-  (jawadcode/leader-keys
-    "t t" '((lambda () (treemacs)) :wk "Toggle treemacs"))
-  (treemacs-load-all-the-icons-with-workaround-font "Hermit"))
+  (treemacs-load-all-the-icons-with-workaround-font "Hermit")
+  :general (jawadcode/leader-keys "t t" #'treemacs))
 
 (use-package treemacs-evil :after (treemacs evil))
 
@@ -231,11 +203,12 @@
    :config
    (setq-default pdf-view-display-size 'fit-width)
    (setq pdf-view-use-scaling t
-	   pdf-view-use-imagemagick nil)
-   (add-hook 'pdf-view-mode-hook
-	       (lambda ()
-		 (setq-local evil-normal-state-cursor (list nil))))
-   (evil-make-overriding-map pdf-view-mode-map 'normal)))
+         pdf-view-use-imagemagick nil)
+   (evil-set-initial-state 'pdf-view-mode 'emacs)
+   (add-hook
+    'pdf-view-mode-hook
+    '(lambda ()
+       (set (make-local-variable 'evil-emacs-state-cursor) (list nil))))))
 
 (use-package all-the-icons
   :if (display-graphic-p)
@@ -274,31 +247,52 @@
   ;; per mode with `ligature-mode'.
   (global-ligature-mode t))
 
-(use-package solaire-mode :config (solaire-global-mode +1))
+(use-package solaire-mode :config (solaire-global-mode 1))
 
 (window-divider-mode)
 
-(use-package doom-themes
-  :demand t
-  :config
-  (setq doom-themes-enable-bold t
-        doom-themes-enable-italic t
-        doom-themes-padded-modeline t)
-  (load-theme 'doom-material-dark t)
-
-  (doom-themes-visual-bell-config)
-  (doom-themes-org-config))
+(use-package standard-themes
+  :custom
+  ;; Read the doc string of each of those user options.  These are some
+  ;; sample values.
+  (standard-themes-bold-constructs t)
+  (standard-themes-italic-constructs t)
+  (standard-themes-disable-other-themes t)
+  (standard-themes-mixed-fonts t)
+  (standard-themes-variable-pitch-ui t)
+  (standard-themes-prompts '(extrabold italic))
+  ;; more complex alist to set weight, height, and optional
+  ;; `variable-pitch' per heading level (t is for any level not
+  ;; specified):
+  (standard-themes-headings
+   '((0 . (variable-pitch light 1.8))
+     (1 . (variable-pitch light 1.7))
+     (2 . (variable-pitch light 1.6))
+     (3 . (variable-pitch semilight 1.5))
+     (4 . (variable-pitch semilight 1.4))
+     (5 . (variable-pitch 1.3))
+     (6 . (variable-pitch 1.2))
+     (7 . (variable-pitch 1.1))
+     (agenda-date . (1.2))
+     (agenda-structure . (variable-pitch light 1.7))
+     (t . (variable-pitch 1.0))))
+  :config (standard-themes-load-light))
 
 (use-package centaur-tabs
   :after (all-the-icons)
+  :custom
+  (centaur-tabs-style "bar")
+  (centaur-tabs-set-bar 'over)
+  (centaur-tabs-cycle-scope 'tabs)
   :config
-  (setq centaur-tabs-style "bar")
-  (setq centaur-tabs-set-bar 'over)
+  (centaur-tabs-group-by-projectile-project)
+  (centaur-tabs-change-fonts (face-attribute 'variable-pitch :font) 135)
+  (jawadcode/leader-keys
+    "t" '(:ignore t :wk "Centaur Tabs")
+    "t n" #'centaur-tabs-forward
+    "t p" #'centaur-tabs-backward)
   (centaur-tabs-mode t)
-  :hook (dashboard-mode . centaur-tabs-local-mode)
-  :bind
-  ("C-<tab>"   . centaur-tabs-backward)
-  ("C-S-<tab>" . centaur-tabs-forward))
+  :hook (dashboard-mode . centaur-tabs-local-mode))
 
 (use-package tree-sitter
   :after tree-sitter-langs
@@ -314,48 +308,37 @@
 
 ;; Org-mode keybinds
 (jawadcode/leader-keys
-  "m"   '(:ignore t :wk "Org")
-  "m a" '(org-agenda :wk "Org agenda")
-  "m e" '(org-export-dispatch :wk "Org export dispatch")
-  "m i" '(org-toggle-item :wk "Org toggle item")
-  "m t" '(org-todo :wk "Org todo")
-  "m B" '(org-babel-tangle :wk "Org babel tangle")
-  "m T" '(org-todo-list :wk "Org todo list"))
+  "o"   '(:ignore t :wk "Org")
+  "o a" #'org-agenda
+  "o e" #'org-export-dispatch
+  "o i" #'org-toggle-item
+  "o t" #'org-todo
+  "o T" #'org-todo-list
+  "o g" #'org-babel-tangle
+  "o d" #'org-time-stamp)
 
 ;; Org mode table keybinds
 (jawadcode/leader-keys
-  "m b"   '(:ignore t :wk "Tables")
-  "m b -" '(org-table-insert-hline :wk "Insert hline in table"))
-
-;; Org mode datetime keybinds
-(jawadcode/leader-keys
-  "m d"   '(:ignore t :wk "Date/deadline")
-  "m d t" '(org-time-stamp :wk "Org time stamp"))
+  "o b"   '(:ignore t :wk "Tables")
+  "o b h" #'org-table-insert-hline)
 
 (use-package toc-org
   :commands toc-org-enable
   :hook (org-mode . toc-org-enable))
 
 (add-hook 'org-mode-hook 'org-indent-mode)
-(use-package org-bullets)
-(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+(use-package org-bullets
+  :hook (org-mode . org-bullets-mode))
 
-(require 'org-tempo)
+(add-hook 'org-mode-hook '(lambda () (require 'org-tempo)))
 
 (use-package ivy
-  ;; :bind
-  ;; (("C-c C-r" . ivy-resume)
-  ;;  ("C-x B"   . ivy-switch-buffer-other-window))
   :custom
   (ivy-use-virtual-buffers t)
   (ivy-count-format "(%d/%d) ")
   (enable-recursive-minibuffers t)
   :config
   (ivy-mode)
-  (jawadcode/leader-keys
-    "i"   '(:ignore t :wk "Ivy")
-    "i r" '(ivy-resume :wk "Resume previous Ivy completion")
-    "i b" '(ivy-switch-buffer-other-window :wk "Switch to another buffer in another window"))
   :delight)
 
 (use-package counsel
@@ -366,7 +349,6 @@
 ;; Adds bling to our ivy completions
 (use-package ivy-rich
   :after ivy
-  :init (ivy-rich-mode 1)
   :custom
   ;; I'll be honest, idk what this does
   (ivy-virtual-abbreviate 'full
@@ -374,24 +356,25 @@
                           ivy-rich-path-style 'abbrev)
   :config
   (ivy-set-display-transformer 'ivy-switch-buffer
-                              'ivy-rich-switch-buffer-transform))
+                              'ivy-rich-switch-buffer-transform)
+  (ivy-rich-mode 1))
 
 (use-package all-the-icons-ivy-rich
   :after ivy-rich
-  :init (all-the-icons-ivy-rich-mode 1))
+  :config (all-the-icons-ivy-rich-mode 1))
 
 (use-package company
-  :init (setq company-tooltip-align-annotations t)
-  :config
-  (define-key company-active-map (kbd "C-n") nil) ; Select next
-  (define-key company-active-map (kbd "C-p") nil) ; Select previous
-  (define-key company-active-map (kbd "RET") nil) ; Complete selection
-  (define-key company-active-map (kbd "M-j") #'company-select-next)
-  (define-key company-active-map (kbd "M-k") #'company-select-previous)
-  (define-key company-active-map (kbd "<tab>") #'company-complete-selection)
-  (global-company-mode)
-  (delight 'company-capf-mode)
-  :delight)
+    :init (setq company-tooltip-align-annotations t)
+    :config
+    (keymap-set company-active-map "C-n"   nil)
+    (keymap-set company-active-map "C-p"   nil)
+    (keymap-set company-active-map "RET"   nil)
+    (keymap-set company-active-map "M-j"   #'company-select-next)
+    (keymap-set company-active-map "M-k"   #'company-select-previous)
+    (keymap-set company-active-map "<tab>" #'company-complete-selection)
+    (global-company-mode)
+    (delight 'company-capf-mode)
+    :delight)
 
 (use-package company-box
   :after company
@@ -399,30 +382,23 @@
   :delight)
 
 (use-package yasnippet
-  :config (yas-global-mode 1)
+  :hook (prog-mode . yas-minor-mode)
   :delight yas-minor-mode)
 
+(use-package yasnippet-snippets
+  :after (yasnippet))
+
 (use-package lsp-mode
-  ;; :hook ((rust-mode          . lsp)
-  ;;        (c-mode             . lsp)
-  ;;        (c++-mode           . lsp)
-  ;;        (meson-mode         . lsp)
-  ;;        (conf-toml-mode     . lsp)
-  ;;        (html-mode          . lsp)
-  ;;        (css-mode           . lsp)
-  ;;        (javascript-mode    . lsp)
-  ;;        (typescript-mode    . lsp)
-  ;;        (lsp-mode           . lsp-enable-which-key-integration))
-  :hook ((prog-mode . lsp)
-         (lsp-mode  . lsp-enable-which-key-integration))
-  :config
-  (evil-define-key 'normal lsp-mode-map (kbd "SPC l") lsp-command-map)
-  (setq lsp-inlay-hint-enable t)
+  :custom (lsp-inlay-hint-enable t)
   :commands lsp
+  :hook ((prog-mode . lsp)
+         (lsp-mode  . lsp-enable-which-key-integration)
+         (lsp-mode  . (lambda ()
+                        (jawadcode/leader-keys "l" lsp-command-map))))
   :delight flymake-mode)
 
-(use-package lsp-ui :commands lsp-ui-mode)
-(use-package lsp-ivy :commands lsp-ivy-workspace-symbol)
+(use-package lsp-ui       :commands lsp-ui-mode)
+(use-package lsp-ivy      :commands lsp-ivy-workspace-symbol)
 (use-package lsp-treemacs :commands lsp-treemacs-errors-list)
 
 (defun c-c++-indentation-hook ()
@@ -454,8 +430,8 @@
 (linux-specific!
  (use-package idris2-mode
    :straight (idris2-mode
-		:host github
-		:repo "idris-community/idris2-mode")
+              :host github
+              :repo "idris-community/idris2-mode")
    :commands idris2-mode))
 
 (use-package meson-mode :commands meson-mode)
@@ -464,19 +440,21 @@
 
 (linux-specific!
  (progn
-  (use-package lsp-nix
-    :straight lsp-mode
-    :custom (lsp-nix-nil-formatter ["nixpkgs-fmt"]))
-  (use-package nix-mode
-    :hook ((nix-mode . lsp-deferred)
-           (nix-mode . (lambda ()
-                         (setq-local tab-width 2)
-                         (setq-local evil-shift-width 2)))))))
+   (use-package lsp-nix
+     :straight lsp-mode
+     :custom (lsp-nix-nil-formatter ["nixpkgs-fmt"]))
+
+   (use-package nix-mode
+     :hook ((nix-mode . lsp-deferred)
+            (nix-mode . (lambda ()
+                          (setq-local tab-width 2)
+                          (setq-local evil-shift-width 2)))))))
 
 (use-package typescript-mode)
 
 (use-package svelte-mode
   :hook ((svelte-mode . lsp)
+         ;; Looks worse with ts, css and js isn't highlighted
          (svelte-mode . (lambda () (tree-sitter-hl-mode -1)))))
 
 (use-package latex
@@ -571,16 +549,16 @@
           ;; Subcaption.
           ("subcaption" "[{")))
   (setq font-latex-match-variable-keywords
-      '(;; Amsmath.
-        ("numberwithin" "{")
-        ;; Enumitem.
-        ("setlist" "[{")
-        ("setlist*" "[{")
-        ("newlist" "{")
-        ("renewlist" "{")
-        ("setlistdepth" "{")
-        ("restartlist" "{")
-        ("crefname" "{")))
+        '(;; Amsmath.
+          ("numberwithin" "{")
+          ;; Enumitem.
+          ("setlist" "[{")
+          ("setlist*" "[{")
+          ("newlist" "{")
+          ("renewlist" "{")
+          ("setlistdepth" "{")
+          ("restartlist" "{")
+          ("crefname" "{")))
 
   (pcase system-type
     ('windows-nt
@@ -590,48 +568,48 @@
      (add-to-list 'TeX-view-program-selection '(output-pdf "PDF Tools"))
      (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)))
 
-	(add-hook 'tex-mode-local-vars-hook #'lsp)
-	(add-hook 'latex-mode-local-vars-hook #'lsp)
+  (add-hook 'tex-mode-local-vars-hook #'lsp)
+  (add-hook 'latex-mode-local-vars-hook #'lsp)
 
-	(require 'tex-fold)
-	(add-hook 'LaTeX-mode-hook #'TeX-fold-mode)
-	(require 'preview)
-	(add-hook 'LaTeX-mode-hook #'LaTeX-preview-setup))
+  (require 'tex-fold)
+  (add-hook 'LaTeX-mode-hook #'TeX-fold-mode)
+  (require 'preview)
+  (add-hook 'LaTeX-mode-hook #'LaTeX-preview-setup))
 
 (use-package auctex-latexmk
-	:after latex
-	:hook (LaTeX-mode . (lambda () (setq TeX-command-default "LatexMk")))
-	:init (setq auctex-latexmk-inherit-TeX-PDF-mode t)
-	:config (auctex-latexmk-setup))
+  :after latex
+  :hook (LaTeX-mode . (lambda () (setq TeX-command-default "LatexMk")))
+  :init (setq auctex-latexmk-inherit-TeX-PDF-mode t)
+  :config (auctex-latexmk-setup))
 (use-package evil-tex
-	:after latex
-	:hook (LaTeX-mode . evil-tex-mode))
+  :after latex
+  :hook (LaTeX-mode . evil-tex-mode))
 (use-package cdlatex
-	:after latex
-	:hook ((LaTeX-mode . cdlatex-mode)
-	       (org-mode   . org-cdlatex-mode))
-	:config (setq cdlatex-use-dollar-to-ensure-math nil))
+  :after latex
+  :hook ((LaTeX-mode . cdlatex-mode)
+         (org-mode   . org-cdlatex-mode))
+  :config (setq cdlatex-use-dollar-to-ensure-math nil))
 
 (use-package company-auctex
-	:after latex
-	:config (company-auctex-init))
+  :after latex
+  :config (company-auctex-init))
 
 (use-package company-reftex
-	:after latex
-	:config
-	(add-hook 'TeX-mode-hook
-		  (lambda ()
-		    (setq-local company-backends
-				(append
-				  '(company-reftex-labels company-reftex-citations)
-                                company-backends)))))
+  :after latex
+  :config
+  (add-hook 'TeX-mode-hook
+            '(lambda ()
+               (setq-local company-backends
+                           (append
+                            '(company-reftex-labels company-reftex-citations)
+                            company-backends)))))
 
 (use-package company-math
-	:after latex
-	:config
-	(add-hook 'TeX-mode-hook
-		  (lambda ()
-		    (setq-local company-backends
-				(append
-				  '(company-math-symbols-latex company-math-symbols-unicode company-latex-commands)
-				  company-backends)))))
+  :after latex
+  :config
+  (add-hook 'TeX-mode-hook
+            '(lambda ()
+               (setq-local company-backends
+                           (append
+                            '(company-math-symbols-latex company-math-symbols-unicode company-latex-commands)
+                            company-backends)))))
