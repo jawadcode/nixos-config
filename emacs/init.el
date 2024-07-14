@@ -1,5 +1,8 @@
 ;;; init.el --- Personal configuration -*- lexical-binding: t -*-
 
+(setq inhibit-startup-message t
+      inhibit-startup-echo-area-message t)
+
 (set-face-font 'default
         (font-spec :family "Iosevka Term SS07"
             :size 13.5
@@ -96,20 +99,22 @@
   :global-prefix "M-SPC")
 
 (jawadcode/leader-keys
+  ;; Buffer keybinds
+  "b"   '(:ignore t :wk "Buffer")
+  "b k" #'kill-buffer
   ;; File keybinds
-  "f"   '(:ignore t       :wk "File")
-  "f f" '(find-file       :wk "Find and open file")
-  "f r" '(counsel-recentf :wk "Find recent files")
+  "f"   '(:ignore t :wk "File")
+  "f f" #'find-file
+  "f r" #'counsel-recentf
   "f c" '((lambda ()
             (interactive)
-            (find-file
-             (f-join user-emacs-directory "init.org")))
+            (find-file (f-join user-emacs-directory "init.org")))
           :wk "Open emacs config")
-  ";"   '(comment-line :wk "Comment lines")
+  ";"   #'comment-line
   ;; Help keybinds
-  "h"   '(:ignore t         :wk "Help")
-  "h f" '(describe-function :wk "Describe function")
-  "h v" '(describe-variable :wk "Describe variable"))
+  "h"   '(:ignore t :wk "Help")
+  "h f" #'describe-function
+  "h v" #'describe-variable)
 
 (electric-pair-mode 1)
 
@@ -182,18 +187,25 @@
   :config
   (dashboard-setup-startup-hook))
 
-(use-package treemacs-all-the-icons :defer t :commands treemacs-all-the-icons)
+(use-package treemacs-all-the-icons
+  :defer t
+  :commands treemacs-all-the-icons)
 
 (use-package treemacs
+  :after projectile
   :config
   (treemacs-load-all-the-icons-with-workaround-font "Hermit")
-  :general (jawadcode/leader-keys "t t" #'treemacs))
+  (treemacs-project-follow-mode t)
+  (treemacs-filewatch-mode t)
+  (treemacs-git-mode 'deferred)
+  :general (jawadcode/leader-keys "r" #'treemacs))
 
 (use-package treemacs-evil :after (treemacs evil))
 
 (use-package treemacs-projectile :after (treemacs projectile))
 
-(use-package treemacs-icons-dired)
+(use-package treemacs-icons-dired
+  :hook (dired-mode . treemacs-icons-dired-enable-once))
 
 (use-package treemacs-tab-bar :after treemacs)
 
@@ -207,7 +219,7 @@
    (evil-set-initial-state 'pdf-view-mode 'emacs)
    (add-hook
     'pdf-view-mode-hook
-    '(lambda ()
+    #'(lambda ()
        (set (make-local-variable 'evil-emacs-state-cursor) (list nil))))))
 
 (use-package all-the-icons
@@ -219,11 +231,6 @@
   (set-fontset-font t 'unicode (font-spec :family "github-octicons") nil 'append)
   (set-fontset-font t 'unicode (font-spec :family "FontAwesome") nil 'append)
   (set-fontset-font t 'unicode (font-spec :family "Weather Icons") nil 'append))
-
-;; This enables all-the-icons in the dired file manager
-(use-package all-the-icons-dired
-  :after all-the-icons
-  :hook (dired-mode . all-the-icons-dired-mode))
 
 (use-package ligature
   :config
@@ -330,7 +337,7 @@
 (use-package org-bullets
   :hook (org-mode . org-bullets-mode))
 
-(add-hook 'org-mode-hook '(lambda () (require 'org-tempo)))
+(add-hook 'org-mode-hook #'(lambda () (require 'org-tempo)))
 
 (use-package ivy
   :custom
@@ -598,7 +605,7 @@
   :after latex
   :config
   (add-hook 'TeX-mode-hook
-            '(lambda ()
+            #'(lambda ()
                (setq-local company-backends
                            (append
                             '(company-reftex-labels company-reftex-citations)
@@ -608,7 +615,7 @@
   :after latex
   :config
   (add-hook 'TeX-mode-hook
-            '(lambda ()
+            #'(lambda ()
                (setq-local company-backends
                            (append
                             '(company-math-symbols-latex company-math-symbols-unicode company-latex-commands)
