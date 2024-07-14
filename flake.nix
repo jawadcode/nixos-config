@@ -13,7 +13,7 @@
     };
   };
 
-  outputs = inputs@{ nixpkgs, home-manager, rust-overlay, ... }: {
+  outputs = { nixpkgs, home-manager, rust-overlay, ... }: {
     nixosConfigurations = {
       ixnay = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
