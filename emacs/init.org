@@ -58,16 +58,18 @@
   - [[#yasnippet][Yasnippet]]
 - [[#language-support][Language Support]]
   - [[#lsp-mode][LSP-Mode]]
-  - [[#c-mode--c-mode][C-Mode && C++-Mode]]
   - [[#rust-mode][Rust-Mode]]
+  - [[#c-mode--c-mode][C-Mode && C++-Mode]]
   - [[#python-mode][Python-Mode]]
+  - [[#glsl-mode][GLSL-Mode]]
+  - [[#ocaml-mode][OCaml-Mode]]
   - [[#haskell-mode][Haskell-Mode]]
   - [[#lean4-mode][Lean4-Mode]]
   - [[#idris2-mode][Idris2-Mode]]
   - [[#meson-mode][Meson-Mode]]
   - [[#cmake-mode][CMake-Mode]]
   - [[#nix-mode][Nix-Mode]]
-  - [[#typescript-mode][Typescript-Mode]]
+  - [[#typescript-mode-and-js-stuff][Typescript-Mode (and JS Stuff)]]
   - [[#svelte-mode][Svelte-Mode]]
   - [[#latex-mode-auctex][LaTeX-Mode (AUCTeX)]]
 
@@ -94,25 +96,25 @@ configuration.
 #+begin_src emacs-lisp
   (set-face-font 'default
           (font-spec :family "Iosevka Term SS07"
-              :size 13.5
+              :size 22
               :weight 'normal
               :width 'normal
               :slant 'normal))
   (set-face-font 'fixed-pitch
           (font-spec :family "Iosevka Term SS07"
-              :size 13.5
+              :size 22
               :weight 'normal
               :width 'normal
               :slant 'normal))
   (set-face-font 'variable-pitch
           (font-spec :family "Roboto"
-              :size 13.5
+              :size 18
               :weight 'normal
               :width 'normal))
   (set-fontset-font t
           'emoji
           (font-spec :family "Noto Color Emoji"
-                :size 13.5
+                :size 22
                 :weight 'normal
                 :width 'normal
                 :slant 'normal))
@@ -140,7 +142,9 @@ Enable Ctrl +/- and Ctrl mouse-wheel-(up|down) keybinds.
 The mantra of the emacs user: undoing dumb defaults.
 
 #+begin_src emacs-lisp
-  (indent-tabs-mode -1)
+  (defun disable-tabs ()
+      (setq-local indent-tabs-mode nil))
+  (setq-default indent-tabs-mode nil)
   (setq-default tab-width 4)
   (setq-default evil-shift-width 4)
 #+end_src
@@ -356,6 +360,7 @@ language support within codeblocks.
 
 #+begin_src emacs-lisp
   (use-package poly-org)
+  (use-package poly-markdown)
 #+end_src
 
 * Programs
@@ -711,17 +716,33 @@ Company is a completion framework for text-mode.
 
 #+begin_src emacs-lisp
   (use-package lsp-mode
-    :custom (lsp-inlay-hint-enable t)
+    :custom
+    (lsp-inlay-hint-enable t)
+    (lsp-enable-suggest-server-download nil)
     :commands lsp
-    :hook ((prog-mode . lsp)
-           (lsp-mode  . lsp-enable-which-key-integration)
-           (lsp-mode  . (lambda ()
-                          (jawadcode/leader-keys "l" lsp-command-map))))
+    :hook ((html-mode      . lsp-deferred)
+           (css-mode       . lsp-deferred)
+           (js-json-mode   . lsp-deferred)
+           (conf-toml-mode . lsp-deferred)
+           (sh-mode        . lsp-deferred)
+           (lsp-mode       . lsp-enable-which-key-integration)
+           (lsp-mode       . (lambda ()
+                               (jawadcode/leader-keys "l" lsp-command-map))))
     :delight flymake-mode)
 
   (use-package lsp-ui       :commands lsp-ui-mode)
   (use-package lsp-ivy      :commands lsp-ivy-workspace-symbol)
   (use-package lsp-treemacs :commands lsp-treemacs-errors-list)
+#+end_src
+
+** Rust-Mode
+
+Evolve to 🦀.
+
+#+begin_src emacs-lisp
+  (use-package rust-mode
+    :hook (rust-mode . lsp-deferred)
+    :commands rust-mode)
 #+end_src
 
 ** C-Mode && C++-Mode
@@ -730,19 +751,15 @@ C is for novelty and C++ for testing my mental fortitude.
 
 #+begin_src emacs-lisp
   (defun c-c++-indentation-hook ()
+    (disable-tabs)
     (setq c-basic-offset tab-width)
     (setq-local evil-shift-width 4))
 
-  (add-hook 'c-mode-hook 'c-c++-indentation-hook)
-  (add-hook 'c++-mode-hook 'c-c++-indentation-hook)
-#+end_src
+  (add-hook 'c-mode-hook   #'c-c++-indentation-hook)
+  (add-hook 'c++-mode-hook #'c-c++-indentation-hook)
 
-** Rust-Mode
-
-Evolve to 🦀.
-
-#+begin_src emacs-lisp
-  (use-package rust-mode :commands rust-mode)
+  (add-hook 'c-mode-hook   #'lsp-deferred)
+  (add-hook 'c++-mode-hook #'lsp-deferred)
 #+end_src
 
 ** Python-Mode
@@ -754,14 +771,31 @@ Evolve to 🦀.
                            (lsp))))  ; or lsp-deferred
 #+end_src
 
+** GLSL-Mode
+
+#+begin_src emacs-lisp
+  (use-package glsl-mode
+    :hook (glsl-mode . lsp-deferred))
+#+end_src
+
+** OCaml-Mode
+
+#+begin_src emacs-lisp
+  (use-package tuareg
+    :hook (tuareg-mode . lsp-deferred)
+    :config
+    (add-hook 'tuareg-mode-hook #'(lambda () (setq tuareg-mode-name "🐫")))
+    (add-hook 'tuareg-mode-hook #'prettify-symbols-mode))
+#+end_src
+
 ** Haskell-Mode
 
 I love me some Zygohistomorphic Prepromorphisms.
 
 #+begin_src emacs-lisp
   (use-package lsp-haskell
-    :hook ((haskell-mode          . lsp)
-           (haskell-literate-mode . lsp)
+    :hook ((haskell-mode          . lsp-deferred)
+           (haskell-literate-mode . lsp-deferred)
            (haskell-mode          . (lambda () (setq-local evil-shift-width 2)))))
 #+end_src
 
@@ -775,6 +809,7 @@ I love lean 💜.
                :host github
                :repo "leanprover/lean4-mode"
                :files ("*.el" "data"))
+    :hook (lean4-mode . lsp-deferred)
     :commands lean4-mode)
 #+end_src
 
@@ -789,6 +824,7 @@ windows support.
      :straight (idris2-mode
                 :host github
                 :repo "idris-community/idris2-mode")
+     :hook (idris2-mode . lsp-deferred)
      :commands idris2-mode))
 #+end_src
 
@@ -797,7 +833,9 @@ windows support.
 The only usable C/C++ build system.
 
 #+begin_src emacs-lisp
-  (use-package meson-mode :commands meson-mode)
+  (use-package meson-mode
+    :hook (meson-mode . lsp-deferred)
+    :commands meson-mode)
 #+end_src
 
 ** CMake-Mode
@@ -805,7 +843,9 @@ The only usable C/C++ build system.
 Only for working on the projects of other unenlightened people.
 
 #+begin_src emacs-lisp
-  (use-package cmake-mode :commands cmake-mode)
+  (use-package cmake-mode
+    :hook (cmake-mode . lsp-deferred)
+    :commands cmake-mode)
 #+end_src
 
 ** Nix-Mode
@@ -826,12 +866,17 @@ I hate this thing, it's like a brain parasite.
                             (setq-local evil-shift-width 2)))))))
 #+end_src
 
-** Typescript-Mode
+** Typescript-Mode (and JS Stuff)
 
 Gotta work on webshit from time to time.
 
 #+begin_src emacs-lisp
-  (use-package typescript-mode)
+  (use-package typescript-mode
+    :init (add-hook 'auto-mode-alist '("\\.mjs\\'" . javascript-mode))
+    :hook
+    (javascript-mode . lsp-deferred)
+    (typescript-mode . lsp-deferred))
+
 #+end_src
 
 ** Svelte-Mode
@@ -840,8 +885,8 @@ I refuse to learn React.
 
 #+begin_src emacs-lisp
   (use-package svelte-mode
-    :hook ((svelte-mode . lsp)
-           ;; Looks worse with ts, css and js isn't highlighted
+    :hook ((svelte-mode . lsp-deferred)
+           ;; Looks worse with TS, embedded CSS and JS isn't highlighted
            (svelte-mode . (lambda () (tree-sitter-hl-mode -1)))))
 #+end_src
 
@@ -856,7 +901,9 @@ bring to a barely usable state.
     :defer t
     :custom (bibtex-dialect 'biblatex)
     :mode ("\\.tex\\'" . LaTeX-mode)
-    :hook (TeX-mode . prettify-symbols-mode)
+    :hook
+    (TeX-mode . prettify-symbols-mode)
+    (LaTeX-mode . lsp)
     :init
     (setq-default TeX-master t)
     (setq TeX-parse-self t
@@ -1008,4 +1055,3 @@ bring to a barely usable state.
                               '(company-math-symbols-latex company-math-symbols-unicode company-latex-commands)
                               company-backends)))))
 #+end_src
-

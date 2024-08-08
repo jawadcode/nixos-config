@@ -19,28 +19,3 @@
 (setq menu-bar-mode      nil
 	  tool-bar-mode      nil
 	  column-number-mode t)
-
-(set-face-font 'default
-			   (font-spec :family "Iosevka Term SS07"
-						  :size 13.5
-						  :weight 'normal
-						  :width 'normal
-						  :slant 'normal))
-(set-face-font 'fixed-pitch
-			   (font-spec :family "Iosevka Term SS07"
-						  :size 13.5
-						  :weight 'normal
-						  :width 'normal
-						  :slant 'normal))
-(set-face-font 'variable-pitch
-			   (font-spec :family "Roboto"
-						  :size 13.5
-						  :weight 'normal
-						  :width 'normal))
-(set-fontset-font t
-				  'emoji
-				  (font-spec :family "Noto Color Emoji"
-							 :size 13.5
-							 :weight 'normal
-							 :width 'normal
-							 :slant 'normal))

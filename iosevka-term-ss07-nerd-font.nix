@@ -20,6 +20,6 @@ stdenvNoCC.mkDerivation rec {
     description = "Versatile typeface for code, from code.";
     license = licenses.ofl;
     platform = platforms.all;
-    maintainers = [];
+    maintainers = [ ];
   };
 }

@@ -1,31 +1,78 @@
-{ config, pkgs, ... }:
+{ pkgs, ... }:
 
+let
+  findExe = pkg: pkgs.lib.meta.getExe pkg;
+in
 {
   home.username = "qak";
   home.homeDirectory = "/home/qak";
   home.stateVersion = "23.11";
   home.packages = with pkgs; [
     # Sway Utilities
-    brightnessctl nwg-drawer sway-contrib.grimshot swaybg swayidle swaylock
+    brightnessctl
+    nwg-drawer
+    sway-contrib.grimshot
+    swaybg
+    swayidle
+    swaylock
     wl-clipboard
+    glib # for gsettings
     # Apps
-    cinnamon.nemo discord evince gnome.eog gnome.file-roller
-    gnome.gnome-disk-utility gnome.gnome-characters gnome.gnome-system-monitor
-    helix kdePackages.kdenlive obsidian playerctl qalculate-gtk rhythmbox
-    thunderbird vlc yt-dlp
+    cinnamon.nemo
+    discord
+    evince
+    gnome.file-roller
+    gnome.gnome-disk-utility
+    gnome.gnome-characters
+    gnome.gnome-system-monitor
+    imv
+    kdePackages.kdenlive
+    obsidian
+    playerctl
+    pwvucontrol
+    qalculate-gtk
+    rhythmbox
+    thunderbird
+    vlc
+    yt-dlp
     # Fonts
-    font-awesome hermit (iosevka-bin.override { variant = "SS07"; })
-    (callPackage ./iosevka-term-ss07-nerd-font.nix {}) noto-fonts noto-fonts-cjk
-    noto-fonts-color-emoji roboto
-    # Language Toolchains
-    clang cmake elan gnumake haskellPackages.haskell-language-server
-    haskellPackages.ormolu haskellPackages.stack idris2 lldb meson mold ninja
-    nodePackages.nodejs opam python312Packages.pip python312Packages.python
-    texliveFull typescript
-    # LSPs
-    clang-tools cmake-language-server idris2Packages.idris2Lsp
-    nil nodePackages.svelte-language-server
-    nodePackages.typescript-language-server pyright vscode-langservers-extracted
+    font-awesome
+    hermit
+    (iosevka-bin.override { variant = "SS07"; })
+    (callPackage ./iosevka-term-ss07-nerd-font.nix { })
+    noto-fonts
+    noto-fonts-cjk
+    noto-fonts-color-emoji
+    roboto
+    ## Language Tooling
+    # clang
+    # cmake
+    # elan
+    # gnumake
+    # haskellPackages.ormolu
+    # haskellPackages.stack
+    # idris2
+    # lldb
+    # meson
+    # mold
+    # ninja
+    nixpkgs-fmt
+    # nodePackages.nodejs
+    # opam
+    python312Packages.pip
+    python312Packages.python
+    # texliveFull
+    # typescript
+    ## LSPs
+    # clang-tools
+    # cmake-language-server
+    # idris2Packages.idris2Lsp
+    nil
+    # nodePackages.svelte-language-server
+    # nodePackages.typescript-language-server
+    # pyright
+    # vscode-langservers-extracted
+    # taplo
     texlab
   ];
 
@@ -33,9 +80,10 @@
     ".config/emacs/early-init.el".source = ./emacs/early-init.el;
     ".config/emacs/init.el".source = ./emacs/init.el;
     ".config/electron-flags.conf".source = ./electron-flags.conf;
+    ".config/nwg-drawer/drawer.css".source = ./nwg-drawer.css;
   };
 
-  home.sessionVariables = {};
+  home.sessionVariables = { };
 
   programs.git = let email = "jawad.w.ahmed@gmail.com"; in {
     enable = true;
@@ -44,7 +92,7 @@
     userName = "jawadcode";
     extraConfig = {
       author.name = "Jawad W. Ahmed";
-      author.email = email; 
+      author.email = email;
       credential.helper = "${ pkgs.gitFull }/bin/git-credential-libsecret";
     };
   };
@@ -57,7 +105,33 @@
     };
   };
 
-  xdg.enable = true;
+  xdg = {
+    mime.enable = true;
+    mimeApps = {
+      enable = true;
+      defaultApplications = {
+        "inode/directory" = "nemo.desktop";
+        "x-scheme-handler/https" = "firefox.desktop";
+        "x-scheme-handler/http" = "firefox.desktop";
+        "text/html" = "firefox.desktop";
+        "image/gif" = "imv.desktop";
+        "image/jpeg" = "imv.desktop";
+        "image/png" = "imv.desktop";
+        "application/ogg" = "org.gnome.Rhythmbox3.desktop";
+        "audio/x-mp3" = "org.gnome.Rhythmbox3.desktop";
+        "video/avi" = "vlc.desktop";
+        "video/mp4" = "vlc.desktop";
+        "video/webm" = "vlc.desktop";
+        "text/plain" = "emacs.desktop";
+        "application/x-shellscript" = "emacs.desktop";
+        "application/pdf" = "org.gnome.Evince.desktop";
+        "image/tiff" = "org.gnome.Evince.desktop";
+        "application/postscript" = "org.gnome.Evince.desktop";
+        "application/x-dvi" = "org.gnome.Evince.desktop";
+      };
+    };
+    userDirs.createDirectories.enable = true;
+  };
 
   programs.waybar = {
     enable = true;
@@ -75,7 +149,8 @@
           tooltip = true;
           tooltip-format = "{app} = {title}";
         };
-      in [
+      in
+      [
         {
           layer = "top";
           output = [ "eDP-1" "DP-1" ];
@@ -102,7 +177,7 @@
           "tray" = { spacing = 10; };
           "clock" = {
             tooltip-format = ''<big>{:%Y %B}</big>
-<tt><small>{calendar}</small></tt>'';
+  <tt><small>{calendar}</small></tt>'';
             format-alt = ''{:%Y-%m-%d}'';
           };
           "idle_inhibitor" = {
@@ -152,7 +227,7 @@
               car = "";
               default = [ "" "" "" ];
             };
-            on-click = "pavucontrol";
+            on-click = "${findExe pkgs.pwvucontrol}";
           };
         }
         {
@@ -167,238 +242,238 @@
             "sway/scratchpad"
           ];
           modules-center = [ "sway/window" ];
-          modules-right = [];
+          modules-right = [ ];
           inherit "sway/mode";
           inherit "sway/scratchpad";
         }
       ];
     style =
-''
-window {
-  font-family: sans-serif, "Font Awesome 6 Free";
-  font-size: 16px;
-}
+      ''
+        window {
+          font-family: sans-serif, "Font Awesome 6 Free";
+          font-size: 16px;
+        }
 
-/* Purposely garish, cope */
-window#waybar {
-  background-color: rgba(36, 36, 36, 0.7);
-  border-bottom: 3px solid rgb(64, 64, 64);
-  color: #E0E0E0;
-  transition-property: background-color;
-  transition-duration: .5s;
-}
+        /* Purposely garish, cope */
+        window#waybar {
+          background-color: rgba(36, 36, 36, 0.7);
+          border-bottom: 3px solid rgb(64, 64, 64);
+          color: #E0E0E0;
+          transition-property: background-color;
+          transition-duration: .5s;
+        }
 
-window#waybar.hidden {
-  opacity: 0.2;
-}
+        window#waybar.hidden {
+          opacity: 0.2;
+        }
 
-button {
-  box-shadow: inset 0 -3px transparent;
-  border: none;
-  border-radius: 0;
-}
+        button {
+          box-shadow: inset 0 -3px transparent;
+          border: none;
+          border-radius: 0;
+        }
 
-button:hover {
-  background: inherit;
-  box-shadow: inset 0 -3px #ffffff;
-}
+        button:hover {
+          background: inherit;
+          box-shadow: inset 0 -3px #ffffff;
+        }
 
-#pulseaudio:hover {
-  background-color: #a37800;
-}
+        #pulseaudio:hover {
+          background-color: #a37800;
+        }
 
-#workspaces button {
-  padding: 0 5px;
-  background-color: transparent;
-  color: #ffffff;
-}
+        #workspaces button {
+          padding: 0 5px;
+          background-color: transparent;
+          color: #ffffff;
+        }
 
-#workspaces button:hover {
-  background: rgba(0, 0, 0, 0.2);
-}
+        #workspaces button:hover {
+          background: rgba(0, 0, 0, 0.2);
+        }
 
-#workspaces button.focused {
-  background-color: #64727D;
-  box-shadow: inset 0 -3px #ffffff;
-}
+        #workspaces button.focused {
+          background-color: #64727D;
+          box-shadow: inset 0 -3px #ffffff;
+        }
 
-#workspaces button.urgent {
-  background-color: #eb4d4b;
-}
+        #workspaces button.urgent {
+          background-color: #eb4d4b;
+        }
 
-#mode {
-  background-color: #64727D;
-  box-shadow: inset 0 -3px #ffffff;
-}
+        #mode {
+          background-color: #64727D;
+          box-shadow: inset 0 -3px #ffffff;
+        }
 
-#scratchpad,
-#mode,
-#idle_inhibitor,
-#pulseaudio,
-#cpu,
-/* #memory, */
-#temperature,
-#battery,
-#tray,
-#clock {
-  padding: 0 10px;
-  margin: 3px 0;
-  color: #E0E0E0;
-}
+        #scratchpad,
+        #mode,
+        #idle_inhibitor,
+        #pulseaudio,
+        #cpu,
+        /* #memory, */
+        #temperature,
+        #battery,
+        #tray,
+        #clock {
+          padding: 0 10px;
+          margin: 3px 0;
+          color: #E0E0E0;
+        }
 
-#window,
-#workspaces {
-  margin: 0 4px;
-}
+        #window,
+        #workspaces {
+          margin: 0 4px;
+        }
 
-/* If workspaces is the leftmost module, omit left margin */
-.modules-left>widget:first-child>#workspaces {
-  margin-left: 0;
-}
+        /* If workspaces is the leftmost module, omit left margin */
+        .modules-left>widget:first-child>#workspaces {
+          margin-left: 0;
+        }
 
-/* If workspaces is the rightmost module, omit right margin */
-.modules-right>widget:last-child>#workspaces {
-  margin-right: 0;
-}
+        /* If workspaces is the rightmost module, omit right margin */
+        .modules-right>widget:last-child>#workspaces {
+          margin-right: 0;
+        }
 
-#clock {
-  background-color: #2980b9;
-  margin-right: 3px;
-}
+        #clock {
+          background-color: #2980b9;
+          margin-right: 3px;
+        }
 
-#battery {
-  background-color: #ffffff;
-  color: #202020;
-}
+        #battery {
+          background-color: #ffffff;
+          color: #202020;
+        }
 
-#battery.charging,
-#battery.plugged {
-  color: #ffffff;
-  background-color: #26A65B;
-}
+        #battery.charging,
+        #battery.plugged {
+          color: #ffffff;
+          background-color: #26A65B;
+        }
 
-@keyframes blink {
-  to {
-    background-color: #ffffff;
-    color: #202020;
-  }
-}
+        @keyframes blink {
+          to {
+            background-color: #ffffff;
+            color: #202020;
+          }
+        }
 
-/* Using steps() instead of linear as a timing function to limit cpu usage */
-#battery.critical:not(.charging) {
-  background-color: #f53c3c;
-  color: #ffffff;
-  animation-name: blink;
-  animation-duration: 0.5s;
-  animation-timing-function: steps(12);
-  animation-iteration-count: infinite;
-  animation-direction: alternate;
-}
+        /* Using steps() instead of linear as a timing function to limit cpu usage */
+        #battery.critical:not(.charging) {
+          background-color: #f53c3c;
+          color: #ffffff;
+          animation-name: blink;
+          animation-duration: 0.5s;
+          animation-timing-function: steps(12);
+          animation-iteration-count: infinite;
+          animation-direction: alternate;
+        }
 
-label:focus {
-  background-color: #202020;
-}
+        label:focus {
+          background-color: #202020;
+        }
 
-#idle_inhibitor {
-  background-color: #2d3436;
-}
+        #idle_inhibitor {
+          background-color: #2d3436;
+        }
 
-#idle_inhibitor.activated {
-  background-color: #ecf0f1;
-  color: #2d3436;
-}
+        #idle_inhibitor.activated {
+          background-color: #ecf0f1;
+          color: #2d3436;
+        }
 
-#pulseaudio {
-  background-color: #f1c40f;
-  color: #202020;
-}
+        #pulseaudio {
+          background-color: #f1c40f;
+          color: #202020;
+        }
 
-#cpu {
-  background-color: #2ecc71;
-  color: #202020;
-}
+        #cpu {
+          background-color: #2ecc71;
+          color: #202020;
+        }
 
-/* #memory {
-    background-color: #9b59b6;
-} */
+        /* #memory {
+            background-color: #9b59b6;
+        } */
 
-#disk {
-  background-color: #964B00;
-}
+        #disk {
+          background-color: #964B00;
+        }
 
-#network {
-  background-color: #2980b9;
-}
+        #network {
+          background-color: #2980b9;
+        }
 
-#network.disconnected {
-  background-color: #f53c3c;
-}
+        #network.disconnected {
+          background-color: #f53c3c;
+        }
 
-#pulseaudio.muted {
-  background-color: #90b1b1;
-  color: #2a5c45;
-}
+        #pulseaudio.muted {
+          background-color: #90b1b1;
+          color: #2a5c45;
+        }
 
-#temperature {
-  background-color: #d0730b;
-}
+        #temperature {
+          background-color: #d0730b;
+        }
 
-#temperature.critical {
-  background-color: #eb4d4b;
-}
+        #temperature.critical {
+          background-color: #eb4d4b;
+        }
 
-#tray {
-  background-color: #64727D;
-}
+        #tray {
+          background-color: #64727D;
+        }
 
-#tray>.passive {
-  -gtk-icon-effect: dim;
-}
+        #tray>.passive {
+          -gtk-icon-effect: dim;
+        }
 
-#tray>.needs-attention {
-  -gtk-icon-effect: highlight;
-  background-color: #eb4d4b;
-}
+        #tray>.needs-attention {
+          -gtk-icon-effect: highlight;
+          background-color: #eb4d4b;
+        }
 
-#scratchpad {
-  background: rgba(0, 0, 0, 0.2);
-}
+        #scratchpad {
+          background: rgba(0, 0, 0, 0.2);
+        }
 
-#scratchpad.empty {
-  background-color: transparent;
-}
+        #scratchpad.empty {
+          background-color: transparent;
+        }
 
-#privacy {
-  padding: 0;
-}
+        #privacy {
+          padding: 0;
+        }
 
-#privacy-item {
-  padding: 0 5px;
-  color: white;
-}
+        #privacy-item {
+          padding: 0 5px;
+          color: white;
+        }
 
-#privacy-item.screenshare {
-  background-color: #cf5700;
-}
+        #privacy-item.screenshare {
+          background-color: #cf5700;
+        }
 
-#privacy-item.audio-in {
-  background-color: #1ca000;
-}
+        #privacy-item.audio-in {
+          background-color: #1ca000;
+        }
 
-#privacy-item.audio-out {
-  background-color: #0069d4;
-}
-'';
+        #privacy-item.audio-out {
+          background-color: #0069d4;
+        }
+      '';
   };
 
   wayland.windowManager.sway = {
     enable = true;
     config =
       let
-        findExe = pkg: pkgs.lib.meta.getExe pkg;
         terminal = "${findExe pkgs.wezterm} -e";
-        menu = ''nwg-drawer -fm "${findExe pkgs.cinnamon.nemo}" -term "${terminal}"'';
-      in {
+        menu = ''${findExe pkgs.nwg-drawer} -fm "${findExe pkgs.cinnamon.nemo}" -term "${terminal}"'';
+      in
+      {
         modifier = "Mod4";
         bars = [{
           command = "${findExe pkgs.waybar}";
@@ -417,16 +492,16 @@ label:focus {
         inherit menu;
         keybindings =
           let
-            mod = config.wayland.windowManager.sway.config.modifier;
             wpctl = pkgs.lib.meta.getExe' pkgs.wireplumber "wpctl";
             brightctl = findExe pkgs.brightnessctl;
             playerctl = findExe pkgs.playerctl;
             grimshot = findExe pkgs.sway-contrib.grimshot;
-            id = "@DEFAULT_AUDIO_SINK@";
-          in pkgs.lib.mkOptionDefault {
-            "XF86AudioRaiseVolume" = "exec ${wpctl} set-volume ${id} 5%+";
-            "XF86AudioLowerVolume" = "exec ${wpctl} set-volume ${id} 5%-";
-            "XF86AudioMute" = "exec ${wpctl} set-mute ${id} toggle";
+            sink = "@DEFAULT_AUDIO_SINK@";
+          in
+          pkgs.lib.mkOptionDefault {
+            "XF86AudioRaiseVolume" = "exec ${wpctl} set-volume ${sink} 5%+";
+            "XF86AudioLowerVolume" = "exec ${wpctl} set-volume ${sink} 5%-";
+            "XF86AudioMute" = "exec ${wpctl} set-mute ${sink} toggle";
 
             "XF86MonBrightnessUp" = "exec ${brightctl} set 5%+";
             "XF86MonBrightnessDown" = "exec ${brightctl} set 5%-";
@@ -456,15 +531,25 @@ label:focus {
           "9610:139:SINO_WEALTH_Gaming_KB__Keyboard" = { xkb_layout = "us"; };
           "1739:0:Synaptics_TM3276-022" = { natural_scroll = "enabled"; tap = "enabled"; };
         };
-        floating.criteria = [{ class = "qalculate-gtk"; }];
+        floating = {
+          titlebar = true;
+          criteria = [{ app_id = "qalculate-gtk"; }];
+        };
         startup = [
-          { command = "nwg-drawer -r"; }
-          { command =
-  ''swayidle -w \
-           timeout 300 'swaylock -f -c 000000' \
-           timeout 600 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' \
-           before-sleep 'swaylock -f -c 000000'
-  ''; }
+          { command = "${findExe pkgs.nwg-drawer} -r"; }
+          {
+            command =
+              let
+                swaylock = findExe pkgs.swaylock;
+                swaymsg = pkgs.lib.meta.getExe' pkgs.sway "swaymsg";
+              in
+              ''
+                ${findExe pkgs.swayidle} -w \
+                    timeout 300 '${swaylock} -f -c 000000' \
+                    timeout 600 '${swaymsg} "output * power off"' resume '${swaymsg} "output * power on"' \
+                    before-sleep '${swaylock} -f -c 000000'
+              '';
+          }
         ];
         inherit terminal;
         window = {
@@ -476,7 +561,7 @@ label:focus {
       export LIBVA_DRIVER_NAME=nvidia
       export XDG_SESSION_TYPE=wayland
       export GBM_BACKEND=nvidia-drm
-      # export __GLX_VENDOR_LIBRARY_NAME=nvidia
+      export __GLX_VENDOR_LIBRARY_NAME=nvidia
       export __NV_PRIME_RENDER_OFFLOAD=1
       export __VK_LAYER_NV_optimus=NVIDIA_only
 
@@ -485,7 +570,7 @@ label:focus {
       export QT_QPA_PLATFORM=wayland
       export MOZ_ENABLE_WAYLAND=1
 
-      export GTK_THEME=Yaru-blue-dark
+      export GTK_THEME=Yaru-blue-light
     '';
     extraOptions = [ "--unsupported-gpu" ];
     extraConfig = ''
@@ -495,7 +580,7 @@ label:focus {
       bindgesture swipe:3:right workspace prev
       bindgesture swipe:3:left workspace next
 
-      exec gsettings set org.gnome.desktop.interface color-scheme prefer-dark
+      exec gsettings set org.gnome.desktop.interface color-scheme prefer-light
     '';
     wrapperFeatures = {
       gtk = true;
@@ -508,17 +593,17 @@ label:focus {
     enable = true;
     font = {
       name = "sans-serif";
-      size=12.0;
+      size = 12.0;
     };
     iconTheme = {
       package = pkgs.yaru-theme;
-      name = "Yaru-blue-dark";
+      name = "Yaru-blue-light";
     };
     theme = {
       package = pkgs.yaru-theme;
-      name = "Yaru-blue-dark";
+      name = "Yaru-blue-light";
     };
-    gtk3.extraConfig.gtk-application-prefer-dark-theme = true;
+    gtk3.extraConfig.gtk-application-prefer-dark-theme = false;
   };
 
   services.mako = {
@@ -528,12 +613,9 @@ label:focus {
     defaultTimeout = 5000;
   };
 
-  services.emacs = {
+  programs.emacs = {
     enable = true;
     package = pkgs.emacs29-pgtk;
-    client.enable = true;
-    defaultEditor = true;
-    startWithUserSession = "graphical";
   };
 
   programs.firefox = {
@@ -550,7 +632,7 @@ label:focus {
         Locked = true;
         Cryptomining = true;
         Fingerprinting = true;
-        Exceptions = [];
+        Exceptions = [ ];
       };
       NoDefaultBookmarks = true;
       PromptForDownloadLocation = true;
@@ -565,20 +647,92 @@ label:focus {
 
       return {
           enable_wayland = false,
-          colors = {
-              foreground = '#FFFFFF',
-              background = 'rgba(18, 18, 18, 0.8)',
-          },
+          color_scheme = 'Alabaster',
           font = wezterm.font_with_fallback({ "IosevkaTermSS07 Nerd Font", "Noto Color Emoji" }),
-          font_size = 15.5,
+          font_size = 14,
           hide_tab_bar_if_only_one_tab = true,
       }
     '';
   };
 
-  # programs.opam.enable = true;
+  programs.helix = {
+    enable = true;
+    defaultEditor = true;
+    languages = {
+      language-server.biome = {
+        command = "biome";
+        args = [ "lsp-proxy" ];
+      };
+      language =
+        let
+          common = {
+            indent = { tab-width = 4; unit = "    "; };
+            auto-format = true;
+          };
+          js-common = {
+            language-servers = [
+              { name = "typescript-language-server"; except-features = [ "format" ]; }
+              "biome"
+            ];
+            inherit (common) indent auto-format;
+          };
+        in
+        [
+          {
+            name = "python";
+            language-servers = [ "pyright" ];
+            inherit (common) indent auto-format;
+          }
+          {
+            name = "c";
+            inherit (common) indent auto-format;
+          }
+          {
+            name = "cpp";
+            inherit (common) indent auto-format;
+          }
+          {
+            name = "javascript";
+            inherit (js-common) language-servers indent auto-format;
+          }
+          {
+            name = "typescript";
+            inherit (js-common) language-servers indent auto-format;
+          }
+          {
+            name = "tsx";
+            inherit (js-common) language-servers indent auto-format;
+          }
+          {
+            name = "jsx";
+            inherit (js-common) language-servers indent auto-format;
+          }
+          {
+            name = "json";
+            inherit (js-common) language-servers indent auto-format;
+          }
+        ];
+    };
+    settings = {
+      theme = "emacs";
+      editor = {
+        bufferline = "always";
+        lsp.display-inlay-hints = true;
+        statusline = {
+          left = [ "mode" "spinner" ];
+          center = [ "file-name" ];
+          right = [ "diagnostics" "selections" "position" "file-encoding" "file-line-ending" "file-type" ];
+          separator = "│";
+        };
+      };
+      keys.normal = {
+        "S-tab" = "goto_next_buffer";
+        "A-tab" = "goto_previous_buffer";
+      };
+    };
+  };
 
   programs.obs-studio.enable = true;
-  
+
   programs.home-manager.enable = true;
 }

@@ -5,25 +5,25 @@
 
 (set-face-font 'default
         (font-spec :family "Iosevka Term SS07"
-            :size 13.5
+            :size 22
             :weight 'normal
             :width 'normal
             :slant 'normal))
 (set-face-font 'fixed-pitch
         (font-spec :family "Iosevka Term SS07"
-            :size 13.5
+            :size 22
             :weight 'normal
             :width 'normal
             :slant 'normal))
 (set-face-font 'variable-pitch
         (font-spec :family "Roboto"
-            :size 13.5
+            :size 18
             :weight 'normal
             :width 'normal))
 (set-fontset-font t
         'emoji
         (font-spec :family "Noto Color Emoji"
-              :size 13.5
+              :size 22
               :weight 'normal
               :width 'normal
               :slant 'normal))
@@ -35,7 +35,9 @@
 (keymap-global-set "C-<wheel-up>"   #'text-scale-increase)
 (keymap-global-set "C-<wheel-down>" #'text-scale-decrease)
 
-(indent-tabs-mode -1)
+(defun disable-tabs ()
+    (setq-local indent-tabs-mode nil))
+(setq-default indent-tabs-mode nil)
 (setq-default tab-width 4)
 (setq-default evil-shift-width 4)
 
@@ -161,6 +163,7 @@
   :delight '(:eval (concat " " (projectile-project-name))))
 
 (use-package poly-org)
+(use-package poly-markdown)
 
 (use-package dashboard
   :if (< (length command-line-args) 2)
@@ -396,35 +399,56 @@
   :after (yasnippet))
 
 (use-package lsp-mode
-  :custom (lsp-inlay-hint-enable t)
+  :custom
+  (lsp-inlay-hint-enable t)
+  (lsp-enable-suggest-server-download nil)
   :commands lsp
-  :hook ((prog-mode . lsp)
-         (lsp-mode  . lsp-enable-which-key-integration)
-         (lsp-mode  . (lambda ()
-                        (jawadcode/leader-keys "l" lsp-command-map))))
+  :hook ((html-mode      . lsp-deferred)
+         (css-mode       . lsp-deferred)
+         (js-json-mode   . lsp-deferred)
+         (conf-toml-mode . lsp-deferred)
+         (sh-mode        . lsp-deferred)
+         (lsp-mode       . lsp-enable-which-key-integration)
+         (lsp-mode       . (lambda ()
+                             (jawadcode/leader-keys "l" lsp-command-map))))
   :delight flymake-mode)
 
 (use-package lsp-ui       :commands lsp-ui-mode)
 (use-package lsp-ivy      :commands lsp-ivy-workspace-symbol)
 (use-package lsp-treemacs :commands lsp-treemacs-errors-list)
 
+(use-package rust-mode
+  :hook (rust-mode . lsp-deferred)
+  :commands rust-mode)
+
 (defun c-c++-indentation-hook ()
+  (disable-tabs)
   (setq c-basic-offset tab-width)
   (setq-local evil-shift-width 4))
 
-(add-hook 'c-mode-hook 'c-c++-indentation-hook)
-(add-hook 'c++-mode-hook 'c-c++-indentation-hook)
+(add-hook 'c-mode-hook   #'c-c++-indentation-hook)
+(add-hook 'c++-mode-hook #'c-c++-indentation-hook)
 
-(use-package rust-mode :commands rust-mode)
+(add-hook 'c-mode-hook   #'lsp-deferred)
+(add-hook 'c++-mode-hook #'lsp-deferred)
 
 (use-package lsp-pyright
   :hook (python-mode . (lambda ()
                          (require 'lsp-pyright)
                          (lsp))))  ; or lsp-deferred
 
+(use-package glsl-mode
+  :hook (glsl-mode . lsp-deferred))
+
+(use-package tuareg
+  :hook (tuareg-mode . lsp-deferred)
+  :config
+  (add-hook 'tuareg-mode-hook #'(lambda () (setq tuareg-mode-name "🐫")))
+  (add-hook 'tuareg-mode-hook #'prettify-symbols-mode))
+
 (use-package lsp-haskell
-  :hook ((haskell-mode          . lsp)
-         (haskell-literate-mode . lsp)
+  :hook ((haskell-mode          . lsp-deferred)
+         (haskell-literate-mode . lsp-deferred)
          (haskell-mode          . (lambda () (setq-local evil-shift-width 2)))))
 
 (use-package lean4-mode
@@ -432,6 +456,7 @@
              :host github
              :repo "leanprover/lean4-mode"
              :files ("*.el" "data"))
+  :hook (lean4-mode . lsp-deferred)
   :commands lean4-mode)
 
 (linux-specific!
@@ -439,11 +464,16 @@
    :straight (idris2-mode
               :host github
               :repo "idris-community/idris2-mode")
+   :hook (idris2-mode . lsp-deferred)
    :commands idris2-mode))
 
-(use-package meson-mode :commands meson-mode)
+(use-package meson-mode
+  :hook (meson-mode . lsp-deferred)
+  :commands meson-mode)
 
-(use-package cmake-mode :commands cmake-mode)
+(use-package cmake-mode
+  :hook (cmake-mode . lsp-deferred)
+  :commands cmake-mode)
 
 (linux-specific!
  (progn
@@ -457,11 +487,15 @@
                           (setq-local tab-width 2)
                           (setq-local evil-shift-width 2)))))))
 
-(use-package typescript-mode)
+(use-package typescript-mode
+  :init (add-hook 'auto-mode-alist '("\\.mjs\\'" . javascript-mode))
+  :hook
+  (javascript-mode . lsp-deferred)
+  (typescript-mode . lsp-deferred))
 
 (use-package svelte-mode
-  :hook ((svelte-mode . lsp)
-         ;; Looks worse with ts, css and js isn't highlighted
+  :hook ((svelte-mode . lsp-deferred)
+         ;; Looks worse with TS, embedded CSS and JS isn't highlighted
          (svelte-mode . (lambda () (tree-sitter-hl-mode -1)))))
 
 (use-package latex
@@ -469,7 +503,9 @@
   :defer t
   :custom (bibtex-dialect 'biblatex)
   :mode ("\\.tex\\'" . LaTeX-mode)
-  :hook (TeX-mode . prettify-symbols-mode)
+  :hook
+  (TeX-mode . prettify-symbols-mode)
+  (LaTeX-mode . lsp)
   :init
   (setq-default TeX-master t)
   (setq TeX-parse-self t
