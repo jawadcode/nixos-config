@@ -100,6 +100,12 @@
   :prefix "SPC"
   :global-prefix "M-SPC")
 
+(use-package envrc
+  :hook (after-init . envrc-global-mode)
+  :config
+  (jawadcode/leader-keys "e" envrc-command-map))
+(use-package inheritenv)
+
 (jawadcode/leader-keys
   ;; Buffer keybinds
   "b"   '(:ignore t :wk "Buffer")
@@ -479,12 +485,12 @@
  (progn
    (use-package lsp-nix
      :straight lsp-mode
-     :custom (lsp-nix-nil-formatter ["nixpkgs-fmt"]))
+     :custom (lsp-nix-nil-formatter ["alejandra"]))
 
    (use-package nix-mode
      :hook ((nix-mode . lsp-deferred)
             (nix-mode . (lambda ()
-                          (setq-local tab-width 2)
+                          (setq tab-width 2)
                           (setq-local evil-shift-width 2)))))))
 
 (use-package typescript-mode

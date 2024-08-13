@@ -1,6 +1,9 @@
-{ lib, stdenvNoCC, fetchzip }:
-
-stdenvNoCC.mkDerivation rec {
+{
+  lib,
+  stdenvNoCC,
+  fetchzip,
+}:
+stdenvNoCC.mkDerivation {
   pname = "iosevka-term-ss07-nerd-font";
   version = "30.1.2";
   src = fetchzip {
@@ -20,6 +23,6 @@ stdenvNoCC.mkDerivation rec {
     description = "Versatile typeface for code, from code.";
     license = licenses.ofl;
     platform = platforms.all;
-    maintainers = [ ];
+    maintainers = [];
   };
 }

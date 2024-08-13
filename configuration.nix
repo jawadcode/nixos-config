@@ -1,10 +1,11 @@
-{ config, pkgs, ... }:
-
 {
-  imports =
-    [
-      ./hardware-configuration.nix
-    ];
+  config,
+  pkgs,
+  ...
+}: {
+  imports = [
+    ./hardware-configuration.nix
+  ];
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -18,7 +19,7 @@
     driSupport32Bit = true;
   };
 
-  services.xserver.videoDrivers = [ "nvidia" ];
+  services.xserver.videoDrivers = ["nvidia"];
   hardware.nvidia = {
     modesetting.enable = true;
     powerManagement.enable = true;
@@ -66,7 +67,7 @@
     # which is required if you want to configure with home-manager but also have it be available to a display manager
     # but that just defeats the whole point of using configuration.nix to install sway.
     # </rant>
-    sessionPackages = [ pkgs.sway ];
+    sessionPackages = [pkgs.sway];
     defaultSession = "sway";
   };
 
@@ -85,7 +86,7 @@
   users.users.qak = {
     isNormalUser = true;
     description = "Jawad Ahmed";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = ["networkmanager" "wheel"];
     shell = pkgs.fish;
   };
 
@@ -104,8 +105,9 @@
       zip
       unzip
       file
+      nix-your-shell
     ];
-    pathsToLink = [ "/share/xdg-desktop-portal" "/share/applications" ];
+    pathsToLink = ["/share/xdg-desktop-portal" "/share/applications"];
   };
 
   xdg = {
@@ -121,11 +123,11 @@
     enable = true;
     useBabelfish = true;
     shellAbbrs = {
-      opam-clean = "opam clean --all-switches --download-cache --logs --repo-cache --unused-repositories";
-      ghcup-gc = "ghcup gc --ghc-old --profiling-libs --share-dir --hls-no-ghc --cache --tmpdirs";
       tree = "lsd --tree";
     };
     interactiveShellInit = ''
+      set -gx BAT_THEME "OneHalfLight"
+
       function paru-search
           paru --color always -Ss $argv | less -r
       end
@@ -137,14 +139,17 @@
 
       fish_vi_key_bindings
     '';
+    shellInit = ''
+      nix-your-shell fish | source
+    '';
   };
 
   programs.sway = {
     enable = true;
     package = null;
     wrapperFeatures.base = false;
-    extraPackages = [ ];
-    extraOptions = [ ];
+    extraPackages = [];
+    extraOptions = [];
   };
 
   services.tlp.enable = true;
@@ -167,12 +172,19 @@
         path = "/home/qak/Sync/notes";
         id = "y7k6u-akw7j";
         enable = true;
-        devices = [ "Poco F2 Pro" ];
+        devices = ["Poco F2 Pro"];
       };
     };
   };
 
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings = {
+    experimental-features = ["nix-command" "flakes"];
+    trusted-public-keys = [
+      "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ="
+    ];
+    substituters = [
+      "https://cache.iog.io"
+    ];
+  };
   system.stateVersion = "23.11";
 }
-

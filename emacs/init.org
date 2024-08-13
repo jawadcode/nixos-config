@@ -27,6 +27,7 @@
   - [[#display-line-numbers-and-enable-soft-wrap][Display Line Numbers and Enable Soft-Wrap]]
   - [[#garbage-collector-magic-hack][Garbage Collector Magic Hack]]
   - [[#create-general-keybinds-definer][Create General Keybinds Definer]]
+  - [[#envrc][Envrc]]
   - [[#miscellaneous-keybinds][Miscellaneous Keybinds]]
 - [[#editor][Editor]]
   - [[#electric-pair-mode][Electric-Pair-Mode]]
@@ -255,6 +256,16 @@ and other emacs packages.
     :keymaps 'override
     :prefix "SPC"
     :global-prefix "M-SPC")
+#+end_src
+
+** Envrc
+
+#+begin_src emacs-lisp
+  (use-package envrc
+    :hook (after-init . envrc-global-mode)
+    :config
+    (jawadcode/leader-keys "e" envrc-command-map))
+  (use-package inheritenv)
 #+end_src
 
 ** Miscellaneous Keybinds
@@ -857,12 +868,12 @@ I hate this thing, it's like a brain parasite.
    (progn
      (use-package lsp-nix
        :straight lsp-mode
-       :custom (lsp-nix-nil-formatter ["nixpkgs-fmt"]))
+       :custom (lsp-nix-nil-formatter ["alejandra"]))
 
      (use-package nix-mode
        :hook ((nix-mode . lsp-deferred)
               (nix-mode . (lambda ()
-                            (setq-local tab-width 2)
+                            (setq tab-width 2)
                             (setq-local evil-shift-width 2)))))))
 #+end_src
 
