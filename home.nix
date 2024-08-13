@@ -16,6 +16,7 @@ in {
     glib # for gsettings
     # Apps
     baobab
+    btop
     cinnamon.nemo
     discord
     evince
@@ -92,6 +93,7 @@ in {
     userEmail = email;
     userName = "jawadcode";
     extraConfig = {
+      init.defaultBranch = "master";
       author.name = "Jawad W. Ahmed";
       author.email = email;
       credential.helper = "${pkgs.gitFull}/bin/git-credential-libsecret";
