@@ -14,26 +14,36 @@ in {
     swaylock
     wl-clipboard
     glib # for gsettings
-    # Apps
+    xorg.xlsclients
+    # Apps (among other things)
+    audacity
     baobab
     btop
     cinnamon.nemo
+    ffmpeg
     discord
     evince
+    glaxnimate
     gnome.file-roller
     gnome.gnome-disk-utility
     gnome.gnome-characters
     gnome.gnome-system-monitor
     imv
-    kdePackages.kdenlive
+    kdenlive
+    libreoffice-qt6-fresh
+    libxml2
+    kdePackages.mlt
     obsidian
     playerctl
     pwvucontrol
     qalculate-gtk
     rhythmbox
+    slurp
+    SDL
     thunderbird
     tokei
     vlc
+    wl-screenrec
     yt-dlp
     # Fonts
     font-awesome
@@ -46,41 +56,21 @@ in {
     roboto
     ## Language Tooling
     alejandra # Nix formatter
-    # clang
-    # cmake
     elan # Can't find any convenient way to create a flake
-    # gnumake
-    # haskellPackages.ormolu
-    # haskellPackages.stack
-    # idris2
-    # lldb
-    # meson
-    # mold
-    # ninja
-    # nodePackages.nodejs
-    # opam
     python312Packages.pip
     python312Packages.python
-    # texliveFull
-    # typescript
-    ## LSPs
-    # clang-tools
-    # cmake-language-server
-    # idris2Packages.idris2Lsp
+    tree-sitter
     nil
-    # nodePackages.svelte-language-server
-    # nodePackages.typescript-language-server
     pyright # Need this pretty much everywhere for writing scripts
-    # vscode-langservers-extracted
-    # taplo
     texlab
   ];
 
   home.file = {
-    ".config/emacs/early-init.el".source = ./emacs/early-init.el;
-    ".config/emacs/init.el".source = ./emacs/init.el;
+    ".config/emacs/early-init.el".source = ./minmacs/early-init.el;
+    ".config/emacs/init.el".source = ./minmacs/init.el;
     ".config/electron-flags.conf".source = ./electron-flags.conf;
-    ".config/nwg-drawer/drawer.css".source = ./nwg-drawer.css;
+    ".local/share/applications/discord.desktop".source = ./discord.desktop;
+    ".local/share/icons/discord.png".source = ./discord.png;
   };
 
   home.sessionVariables = {};
@@ -256,7 +246,8 @@ in {
 
       /* Purposely garish, cope */
       window#waybar {
-        background-color: rgba(36, 36, 36, 0.7);
+        /* background-color: rgba(36, 36, 36, 0.7); */
+        background-color: rgba(24, 24, 24, 0.8);
         border-bottom: 3px solid rgb(64, 64, 64);
         color: #E0E0E0;
         transition-property: background-color;
@@ -470,7 +461,8 @@ in {
     enable = true;
     config = let
       terminal = "${findExe pkgs.wezterm} -e";
-      menu = ''${findExe pkgs.nwg-drawer} -fm "${findExe pkgs.cinnamon.nemo}" -term "${terminal}"'';
+      file-manager = findExe pkgs.cinnamon.nemo;
+      menu = ''${findExe pkgs.nwg-drawer} -fm "${file-manager}" -term wezterm'';
     in {
       modifier = "Mod4";
       bars = [
@@ -491,10 +483,10 @@ in {
       gaps.inner = 5;
       inherit menu;
       keybindings = let
-        wpctl = pkgs.lib.meta.getExe' pkgs.wireplumber "wpctl";
         brightctl = findExe pkgs.brightnessctl;
-        playerctl = findExe pkgs.playerctl;
         grimshot = findExe pkgs.sway-contrib.grimshot;
+        playerctl = findExe pkgs.playerctl;
+        wpctl = pkgs.lib.meta.getExe' pkgs.wireplumber "wpctl";
         sink = "@DEFAULT_AUDIO_SINK@";
       in
         pkgs.lib.mkOptionDefault {
@@ -512,7 +504,9 @@ in {
           "XF86Search" = "exec ${menu}";
 
           "Mod4+Q" = "exec ${findExe pkgs.qalculate-gtk}";
+          "Mod4+M" = "exec ${file-manager}";
           "Mod4+Ctrl+C" = "exec ${findExe pkgs.gnome.gnome-characters}";
+          "Mod4+Ctrl+R" = "exec ${findExe pkgs.wl-screenrec} -g ${findExe pkgs.slurp}";
 
           "Print" = "exec ${grimshot} savecopy area";
           "Shift+Print" = "exec ${grimshot} savecopy window";
@@ -549,7 +543,11 @@ in {
       };
       floating = {
         titlebar = true;
-        criteria = [{app_id = "qalculate-gtk";}];
+        criteria = [
+          {app_id = "qalculate-gtk";}
+          {app_id = "org.gnome.Characters";}
+          {title = "Exalted.*";}
+        ];
       };
       startup = [
         {command = "${findExe pkgs.nwg-drawer} -r";}
@@ -571,30 +569,41 @@ in {
         border = 0;
       };
     };
+    # From https://github.com/crispyricepc/sway-nvidia/blob/2101a18698151a61266740f1297158119bf660ac/wlroots-env-nvidia.sh
+    # minus `WLR_NO_HARDWARE_CURSORS=1` as they should be working with nvidia now
     extraSessionCommands = ''
-      export LIBVA_DRIVER_NAME=nvidia
-      export XDG_SESSION_TYPE=wayland
+      # General wayland environment variables
+      # export QT_QPA_PLATFORM=wayland
+      # export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+      # Firefox wayland environment variable
+      export MOZ_ENABLE_WAYLAND=1
+      export MOZ_USE_XINPUT2=1
+      # OpenGL Variables
       export GBM_BACKEND=nvidia-drm
+      export __GL_GSYNC_ALLOWED=0
+      export __GL_VRR_ALLOWED=0
       export __GLX_VENDOR_LIBRARY_NAME=nvidia
+      # Xwayland compatibility
+      export XWAYLAND_NO_GLAMOR=1
+
+      # Custom stuff
+      export GDK_BACKEND=wayland
       export __NV_PRIME_RENDER_OFFLOAD=1
       export __VK_LAYER_NV_optimus=NVIDIA_only
 
-      export SDL_VIDEODRIVER=wayland
-      export GTK_BACKEND=wayland
-      export QT_QPA_PLATFORM=wayland
-      export MOZ_ENABLE_WAYLAND=1
-
-      export GTK_THEME=Yaru-blue-light
+      export GTK_THEME=Yaru-blue-dark
     '';
     extraOptions = ["--unsupported-gpu"];
     extraConfig = ''
+      default_floating_border normal 2
+
       bindswitch lid:on output eDP-1 disable
       bindswitch lid:off output eDP-1 enable
 
       bindgesture swipe:3:right workspace prev
       bindgesture swipe:3:left workspace next
 
-      exec gsettings set org.gnome.desktop.interface color-scheme prefer-light
+      exec gsettings set org.gnome.desktop.interface color-scheme prefer-dark
     '';
     wrapperFeatures = {
       gtk = true;
@@ -611,13 +620,13 @@ in {
     };
     iconTheme = {
       package = pkgs.yaru-theme;
-      name = "Yaru-blue-light";
+      name = "Yaru-blue-dark";
     };
     theme = {
       package = pkgs.yaru-theme;
-      name = "Yaru-blue-light";
+      name = "Yaru-blue-dark";
     };
-    gtk3.extraConfig.gtk-application-prefer-dark-theme = false;
+    gtk3.extraConfig.gtk-application-prefer-dark-theme = true;
   };
 
   services.mako = {
@@ -634,7 +643,7 @@ in {
 
   programs.emacs = {
     enable = true;
-    package = pkgs.emacs29-pgtk;
+    package = pkgs.emacs;
   };
 
   programs.firefox = {
@@ -662,13 +671,12 @@ in {
   programs.wezterm = {
     enable = true;
     extraConfig = ''
-      local wezterm = require'wezterm'
-
       return {
-          enable_wayland = false,
-          color_scheme = 'Alabaster',
+          -- enable_wayland = false,
+          front_end = "WebGpu",
+          color_scheme = 'Apple System Colors',
           font = wezterm.font_with_fallback({ "IosevkaTermSS07 Nerd Font", "Noto Color Emoji" }),
-          font_size = 13.5,
+          font_size = 15.5,
           hide_tab_bar_if_only_one_tab = true,
       }
     '';
@@ -744,7 +752,7 @@ in {
       ];
     };
     settings = {
-      theme = "emacs";
+      theme = "dark_plus";
       editor = {
         bufferline = "always";
         lsp.display-inlay-hints = true;
@@ -762,7 +770,10 @@ in {
     };
   };
 
-  programs.obs-studio.enable = true;
+  programs.obs-studio = {
+    enable = true;
+    plugins = [pkgs.obs-studio-plugins.wlrobs];
+  };
 
   programs.home-manager.enable = true;
 }

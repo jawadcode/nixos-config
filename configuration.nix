@@ -14,12 +14,17 @@
     # These two should be enabled by default for sway but I'm not chancing it:
     enable = true;
     driSupport = true;
-
-    # Not strictly necessary but I might want to use WINE at some point
-    driSupport32Bit = true;
+    extraPackages = with pkgs; [
+      intel-media-driver
+      intel-ocl
+      intel-vaapi-driver
+    ];
   };
 
-  services.xserver.videoDrivers = ["nvidia"];
+  # Hoping I don't need this cos I'm using wayland, though I guess it could
+  # mess with XWayland.
+  services.xserver.videoDrivers = ["nvidia" "intel"];
+
   hardware.nvidia = {
     modesetting.enable = true;
     powerManagement.enable = true;
@@ -27,6 +32,7 @@
     nvidiaSettings = true;
     package = config.boot.kernelPackages.nvidiaPackages.stable;
     prime = {
+      offload.enable = true;
       intelBusId = "PCI:0:2:0";
       nvidiaBusId = "PCI:1:0:0";
     };
@@ -90,8 +96,6 @@
     shell = pkgs.fish;
   };
 
-  nixpkgs.config.allowUnfree = true;
-
   environment = {
     systemPackages = with pkgs; [
       fd
@@ -101,7 +105,6 @@
       curl
       bat
       man
-      nvidia-vaapi-driver
       zip
       unzip
       file
@@ -113,9 +116,7 @@
   xdg = {
     portal = {
       wlr.enable = true;
-      extraPortals = with pkgs; [
-        xdg-desktop-portal-gtk
-      ];
+      extraPortals = with pkgs; [xdg-desktop-portal-gtk xdg-desktop-portal-kde];
     };
   };
 
@@ -126,8 +127,6 @@
       tree = "lsd --tree";
     };
     interactiveShellInit = ''
-      set -gx BAT_THEME "OneHalfLight"
-
       function paru-search
           paru --color always -Ss $argv | less -r
       end
@@ -137,7 +136,14 @@
           paru -Qqd  | paru -Rsu -
       end
 
-      fish_vi_key_bindings
+      function fish_hybrid_key_bindings --description \
+      "Vi-style bindings that inherit emacs-style bindings in all modes"
+          for mode in default insert visual
+              fish_default_key_bindings -M $mode
+          end
+          fish_vi_key_bindings --no-erase
+      end
+      set -g fish_key_bindings fish_hybrid_key_bindings
     '';
     shellInit = ''
       nix-your-shell fish | source

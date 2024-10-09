@@ -14,18 +14,25 @@
     ...
   }: {
     nixosConfigurations = {
-      ixnay = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [
-          ./configuration.nix
-          home-manager.nixosModules.home-manager
-          {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.users.qak = import ./home.nix;
-          }
-        ];
-      };
+      ixnay = let
+        pkgs = import nixpkgs {
+          system = "x86_64-linux";
+          config.allowUnfree = true;
+        };
+      in
+        nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          inherit pkgs;
+          modules = [
+            ./configuration.nix
+            home-manager.nixosModules.home-manager
+            {
+              home-manager.useGlobalPkgs = true;
+              home-manager.useUserPackages = true;
+              home-manager.users.qak = import ./home.nix;
+            }
+          ];
+        };
     };
   };
 }
