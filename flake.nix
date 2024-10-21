@@ -2,14 +2,15 @@
   description = "Ixnay Configuration";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05";
-
+    nixpkgs.follows = "nixos-cosmic/nixpkgs-stable";
+    nixos-cosmic.url = "github:lilyinstarlight/nixos-cosmic";
     home-manager.url = "github:nix-community/home-manager/release-24.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = {
     nixpkgs,
+    nixos-cosmic,
     home-manager,
     ...
   }: {
@@ -24,6 +25,13 @@
           system = "x86_64-linux";
           inherit pkgs;
           modules = [
+            {
+              nix.settings = {
+                substituters = ["https://cosmic.cachix.org/"];
+                trusted-public-keys = ["cosmic.cachix.org-1:Dya9IyXD4xdBehWjrkPv6rtxpmMdRel02smYzA85dPE="];
+              };
+            }
+            nixos-cosmic.nixosModules.default
             ./configuration.nix
             home-manager.nixosModules.home-manager
             {

@@ -11,7 +11,6 @@
   boot.loader.efi.canTouchEfiVariables = true;
 
   hardware.opengl = {
-    # These two should be enabled by default for sway but I'm not chancing it:
     enable = true;
     driSupport = true;
     extraPackages = with pkgs; [
@@ -63,19 +62,8 @@
     };
   };
 
-  services.displayManager = {
-    sddm = {
-      enable = true;
-      wayland.enable = true;
-    };
-    # <rant>
-    # the sway module doesn't add the session if you have package == null
-    # which is required if you want to configure with home-manager but also have it be available to a display manager
-    # but that just defeats the whole point of using configuration.nix to install sway.
-    # </rant>
-    sessionPackages = [pkgs.sway];
-    defaultSession = "sway";
-  };
+  services.desktopManager.cosmic.enable = true;
+  services.displayManager.cosmic-greeter.enable = true;
 
   services.printing.enable = true;
   hardware.pulseaudio.enable = false;
@@ -150,18 +138,9 @@
     '';
   };
 
-  programs.sway = {
-    enable = true;
-    package = null;
-    wrapperFeatures.base = false;
-    extraPackages = [];
-    extraOptions = [];
-  };
-
-  services.tlp.enable = true;
+  # services.tlp.enable = true;
   services.gvfs.enable = true;
   services.udisks2.enable = true;
-  services.blueman.enable = true;
   services.syncthing = {
     enable = true;
     user = "qak";
