@@ -18,4 +18,6 @@
 ;; Windows uses UTF-16 for its clipboard, so setting UTF-8 in that case would
 ;; break things
 (unless (eq system-type 'windows-nt)
-    (setq selection-coding-system 'utf-8))
+  (setq selection-coding-system 'utf-8))
+
+(setenv "LSP_USE_PLISTS" "true")

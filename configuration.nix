@@ -97,6 +97,8 @@
       unzip
       file
       nix-your-shell
+      usbutils
+      starship
     ];
     pathsToLink = ["/share/xdg-desktop-portal" "/share/applications"];
   };
@@ -106,6 +108,19 @@
       wlr.enable = true;
       extraPortals = with pkgs; [xdg-desktop-portal-gtk xdg-desktop-portal-kde];
     };
+  };
+
+  environment.variables = {
+    # Firefox
+    MOZ_ENABLE_WAYLAND = 1;
+    MOZ_USE_XINPUT2 = 1;
+    # Graphics stuff
+    GBM_BACKEND = "nvidia-drm";
+    __GL_GSYNC_ALLOWED = 0;
+    __GL_VRR_ALLOWED = 0;
+    __GLX_VENDOR_LIBRARY_NAME = "nvidia";
+    __NV_PRIME_RENDER_OFFLOAD = 1;
+    __VK_LAYER_NV_optimus = "NVIDIA_only";
   };
 
   programs.fish = {
@@ -131,7 +146,10 @@
           end
           fish_vi_key_bindings --no-erase
       end
+
       set -g fish_key_bindings fish_hybrid_key_bindings
+
+      source (starship init fish --print-full-init | psub)
     '';
     shellInit = ''
       nix-your-shell fish | source

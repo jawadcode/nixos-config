@@ -1,21 +1,15 @@
-{pkgs, ...}: let
-  findExe = pkg: pkgs.lib.meta.getExe pkg;
-in {
+{pkgs, ...}: {
   home.username = "qak";
   home.homeDirectory = "/home/qak";
   home.stateVersion = "23.11";
   home.packages = with pkgs; [
     # Apps (among other things)
     audacity
-    baobab
     btop
-    cinnamon.nemo
     ffmpeg
     discord
     evince
     glaxnimate
-    gnome.file-roller
-    gnome.gnome-disk-utility
     gnome.gnome-characters
     gnome.gnome-system-monitor
     imv
@@ -24,16 +18,13 @@ in {
     libxml2
     kdePackages.mlt
     obsidian
-    playerctl
-    pwvucontrol
     qalculate-gtk
     rhythmbox
-    slurp
-    SDL
     thunderbird
     tokei
     vlc
     yt-dlp
+    xorg.xlsclients
     # Fonts
     font-awesome
     hermit
@@ -43,22 +34,33 @@ in {
     noto-fonts-cjk
     noto-fonts-color-emoji
     roboto
-    ## Language Tooling
+    # Language Tooling
+    emacs-lsp-booster
     alejandra # Nix formatter
     elan # Can't find any convenient way to create a flake
     python312Packages.pip
     python312Packages.python
+    tinymist
     tree-sitter
+    typst
     nil
     pyright # Need this pretty much everywhere for writing scripts
     texlab
+    # Games
+    temurin-bin-17
+    prismlauncher
   ];
 
   home.file = {
-    ".config/emacs/early-init.el".source = ./minmacs/early-init.el;
-    ".config/emacs/init.el".source = ./minmacs/init.el;
+    ".config/emacs/codemacs/early-init.el".source = ./minmacs/codemacs/early-init.el;
+    ".config/emacs/codemacs/init.el".source = ./minmacs/codemacs/init.el;
+    ".config/emacs/mathmacs/early-init.el".source = ./minmacs/mathmacs/early-init.el;
+    ".config/emacs/mathmacs/init.el".source = ./minmacs/mathmacs/init.el;
+    ".config/emacs/common".source = ./minmacs/common;
     ".config/electron-flags.conf".source = ./electron-flags.conf;
     ".local/share/applications/discord.desktop".source = ./discord.desktop;
+    ".local/share/applications/codemacs.desktop".source = ./codemacs.desktop;
+    ".local/share/applications/mathmacs.desktop".source = ./mathmacs.desktop;
     ".local/share/icons/discord.png".source = ./discord.png;
   };
 
@@ -79,33 +81,35 @@ in {
     };
   };
 
-  xdg = {
-    mime.enable = true;
-    mimeApps = {
-      enable = true;
-      defaultApplications = {
-        "inode/directory" = "nemo.desktop";
-        "x-scheme-handler/https" = "firefox.desktop";
-        "x-scheme-handler/http" = "firefox.desktop";
-        "text/html" = "firefox.desktop";
-        "image/gif" = "imv.desktop";
-        "image/jpeg" = "imv.desktop";
-        "image/png" = "imv.desktop";
-        "application/ogg" = "org.gnome.Rhythmbox3.desktop";
-        "audio/x-mp3" = "org.gnome.Rhythmbox3.desktop";
-        "video/avi" = "vlc.desktop";
-        "video/mp4" = "vlc.desktop";
-        "video/webm" = "vlc.desktop";
-        "text/plain" = "emacs.desktop";
-        "application/x-shellscript" = "emacs.desktop";
-        "application/pdf" = "org.gnome.Evince.desktop";
-        "image/tiff" = "org.gnome.Evince.desktop";
-        "application/postscript" = "org.gnome.Evince.desktop";
-        "application/x-dvi" = "org.gnome.Evince.desktop";
-      };
-    };
-    userDirs.createDirectories.enable = true;
-  };
+  programs.nix-index.enable = true;
+
+  # xdg = {
+  #   mime.enable = true;
+  #   mimeApps = {
+  #     enable = true;
+  #     defaultApplications = {
+  #       "inode/directory" = "nemo.desktop";
+  #       "x-scheme-handler/https" = "firefox.desktop";
+  #       "x-scheme-handler/http" = "firefox.desktop";
+  #       "text/html" = "firefox.desktop";
+  #       "image/gif" = "imv.desktop";
+  #       "image/jpeg" = "imv.desktop";
+  #       "image/png" = "imv.desktop";
+  #       "application/ogg" = "org.gnome.Rhythmbox3.desktop";
+  #       "audio/x-mp3" = "org.gnome.Rhythmbox3.desktop";
+  #       "video/avi" = "vlc.desktop";
+  #       "video/mp4" = "vlc.desktop";
+  #       "video/webm" = "vlc.desktop";
+  #       "text/plain" = "emacs.desktop";
+  #       "application/x-shellscript" = "emacs.desktop";
+  #       "application/pdf" = "org.gnome.Evince.desktop";
+  #       "image/tiff" = "org.gnome.Evince.desktop";
+  #       "application/postscript" = "org.gnome.Evince.desktop";
+  #       "application/x-dvi" = "org.gnome.Evince.desktop";
+  #     };
+  #   };
+  #   userDirs.createDirectories.enable = true;
+  # };
 
   programs.direnv = {
     enable = true;
@@ -114,7 +118,7 @@ in {
 
   programs.emacs = {
     enable = true;
-    package = pkgs.emacs;
+    package = pkgs.emacs29-pgtk;
   };
 
   programs.firefox = {
@@ -240,10 +244,7 @@ in {
     };
   };
 
-  programs.obs-studio = {
-    enable = true;
-    plugins = [pkgs.obs-studio-plugins.wlrobs];
-  };
+  programs.obs-studio.enable = true;
 
   programs.home-manager.enable = true;
 }
