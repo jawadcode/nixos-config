@@ -58,6 +58,7 @@
     ".config/emacs/mathmacs/init.el".source = ./minmacs/mathmacs/init.el;
     ".config/emacs/common".source = ./minmacs/common;
     ".config/electron-flags.conf".source = ./electron-flags.conf;
+    ".config/starship.toml".source = ./starship.toml;
     ".local/share/applications/discord.desktop".source = ./discord.desktop;
     ".local/share/applications/codemacs.desktop".source = ./codemacs.desktop;
     ".local/share/applications/mathmacs.desktop".source = ./mathmacs.desktop;
