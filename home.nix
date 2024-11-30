@@ -46,9 +46,6 @@
     nil
     pyright # Need this pretty much everywhere for writing scripts
     texlab
-    # Games
-    temurin-bin-17
-    prismlauncher
   ];
 
   home.file = {
@@ -60,9 +57,11 @@
     ".config/electron-flags.conf".source = ./electron-flags.conf;
     ".config/starship.toml".source = ./starship.toml;
     ".local/share/applications/discord.desktop".source = ./discord.desktop;
+    ".local/share/applications/obsidian.desktop".source = ./obsidian.desktop;
     ".local/share/applications/codemacs.desktop".source = ./codemacs.desktop;
     ".local/share/applications/mathmacs.desktop".source = ./mathmacs.desktop;
     ".local/share/icons/discord.png".source = ./discord.png;
+    ".local/share/icons/obsidian.png".source = ./obsidian.png;
   };
 
   home.sessionVariables = {};
