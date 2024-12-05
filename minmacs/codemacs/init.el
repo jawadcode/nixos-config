@@ -65,10 +65,14 @@
 (when (eq system-type 'gnu/linux)
   (use-package idris2-mode
     :straight (idris2-mode
-							 :host github
-							 :repo "idris-community/idris2-mode")
+               :host github
+               :repo "idris-community/idris2-mode")
     :hook (idris2-mode . lsp-deferred)
     :commands idris2-mode)
-  (use-package nix-mode :mode "\\.nix\\'"))
+  (use-package nix-mode
+    :mode "\\.nix\\'"
+    :hook (nix-mode . (lambda ()
+                        (setq lsp-nix-nil-formatter ["alejandra" "-"])
+                        (lsp-deferred)))))
 
 (load (file-name-concat emacs-dir "common/load-env-vars.el"))

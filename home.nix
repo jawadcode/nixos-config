@@ -10,8 +10,8 @@
     discord
     evince
     glaxnimate
-    gnome.gnome-characters
-    gnome.gnome-system-monitor
+    gnome-characters
+    gnome-system-monitor
     imv
     kdenlive
     libreoffice-qt6-fresh
@@ -31,7 +31,7 @@
     (iosevka-bin.override {variant = "SS07";})
     (callPackage ./iosevka-term-ss07-nerd-font.nix {})
     noto-fonts
-    noto-fonts-cjk
+    noto-fonts-cjk-sans
     noto-fonts-color-emoji
     roboto
     # Language Tooling
@@ -46,6 +46,9 @@
     nil
     pyright # Need this pretty much everywhere for writing scripts
     texlab
+    # Minecraft
+    temurin-jre-bin
+    prismlauncher
   ];
 
   home.file = {
