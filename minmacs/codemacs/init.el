@@ -14,7 +14,7 @@
 (add-hook 'emacs-lisp-mode-hook #'smol-tabs)
 
 (use-package rust-mode
-  :hook (rust-mode . lsp-deferred)
+  :hook (rust-lsp-deferred)
   :commands rust-mode)
 
 (defun c/++-setup ()
@@ -30,10 +30,12 @@
          (tuareg-mode . (lambda () (setq tuareg-mode-name "🐫"))))
   :commands tuareg-mode)
 
-(use-package haskell-mode
-  :hook ((haskell-mode . lsp-deferred)
-         (haskell-literate-mode . lsp-deferred)
-         (haskell-mode . smol-tabs))
+(use-package lsp-haskell
+  :hook ((haskell-mode . (lambda ()
+													 (setq-local ligature-mode nil)
+													 (smol-tabs)
+													 (lsp-deferred)))
+				 (haskell-literate-mode . lsp-deferred))
   :commands (haskell-mode haskell-literate-mode))
 
 (use-package glsl-mode

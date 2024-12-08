@@ -1,3 +1,6 @@
+[character]
+success_symbol = '[λx.](bold blue)'
+
 [aws]
 format = '\[[$symbol($profile)(\($region\))(\[$duration\])]($style)\]'
 
@@ -107,7 +110,7 @@ format = '\[[$symbol$project]($style)\]'
 format = '\[[$symbol($version)]($style)\]'
 
 [nix_shell]
-format = '\[[$symbol$state( \($name\))]($style)\]'
+disabled = true
 
 [nodejs]
 format = '\[[$symbol($version)]($style)\]'

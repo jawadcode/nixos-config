@@ -95,6 +95,7 @@
       zip
       unzip
       file
+      ntfs3g
       nix-your-shell
       usbutils
       starship
