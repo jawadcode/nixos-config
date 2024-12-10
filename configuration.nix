@@ -85,6 +85,7 @@
 
   environment = {
     systemPackages = with pkgs; [
+      dconf
       fd
       lsd
       ripgrep
