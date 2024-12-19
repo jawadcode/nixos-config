@@ -14,8 +14,10 @@
 (add-hook 'emacs-lisp-mode-hook #'smol-tabs)
 
 (use-package rust-mode
-  :hook (rust-lsp-deferred)
+  :hook (rust-mode . lsp-deferred)
   :commands rust-mode)
+
+(add-hook 'conf-toml-mode-hook #'lsp-deferred)
 
 (defun c/++-setup ()
   (setq c-basic-offset tab-width)
@@ -23,6 +25,9 @@
 
 (add-hook 'c-mode-hook   #'c/++-setup)
 (add-hook 'c++-mode-hook #'c/++-setup)
+
+(use-package lsp-pyright
+  :hook (python-mode . lsp-deferred))
 
 (use-package tuareg
   :hook ((tuareg-mode . lsp-deferred)
@@ -32,10 +37,10 @@
 
 (use-package lsp-haskell
   :hook ((haskell-mode . (lambda ()
-													 (setq-local ligature-mode nil)
-													 (smol-tabs)
-													 (lsp-deferred)))
-				 (haskell-literate-mode . lsp-deferred))
+                           (setq-local ligature-mode nil)
+                           (smol-tabs)
+                           (lsp-deferred)))
+         (haskell-literate-mode . lsp-deferred))
   :commands (haskell-mode haskell-literate-mode))
 
 (use-package glsl-mode

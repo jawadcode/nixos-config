@@ -8,7 +8,6 @@
     btop
     ffmpeg
     discord
-    evince
     glaxnimate
     gnome-characters
     gnome-system-monitor
@@ -18,6 +17,7 @@
     libxml2
     kdePackages.mlt
     obsidian
+    papers
     qalculate-gtk
     rhythmbox
     thunderbird
@@ -121,7 +121,7 @@
 
   programs.emacs = {
     enable = true;
-    package = pkgs.emacs29-pgtk;
+    package = pkgs.emacs30-pgtk;
   };
 
   programs.firefox = {
