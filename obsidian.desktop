@@ -1,9 +1,0 @@
-[Desktop Entry]
-Categories=Office
-Comment=Knowledge base
-Exec=obsidian --enable-features=UseOzonePlatform --ozone-platform=wayland %u
-Icon=obsidian
-MimeType=x-scheme-handler/obsidian
-Name=Obsidian
-Type=Application
-Version=1.4

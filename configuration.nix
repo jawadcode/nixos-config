@@ -10,6 +10,7 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
+  hardware.enableAllFirmware = true;
   hardware.graphics = {
     enable = true;
     extraPackages = with pkgs; [
@@ -19,8 +20,9 @@
     ];
   };
 
-  # Hoping I don't need this cos I'm using wayland, though I guess it could
-  # mess with XWayland.
+  console.keyMap = "uk";
+
+  # Hoping I don't need this cos I'm using wayland, though I guess it could help with XWayland.
   services.xserver.videoDrivers = ["nvidia" "intel"];
 
   hardware.nvidia = {
@@ -36,10 +38,28 @@
     };
   };
 
+  services.tlp = {
+    enable = true;
+    settings = {
+      CPU_ENERGY_PERF_POLICY_ON_AC = "performance";
+      CPU_ENERGY_PERF_POLICY_ON_BAT = "balance_performance";
+
+      PLATFORM_PROFILE_ON_AC = "performance";
+      PLATFORM_PROFILE_ON_BAT = "balanced";
+
+      CPU_BOOST_ON_AC = 1;
+      CPU_BOOST_ON_BAT = 0;
+
+      CPU_HWP_DYN_BOOST_ON_AC = 1;
+      CPU_HWP_DYN_BOOST_ON_BAT = 0;
+    };
+  };
+
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = true;
   };
+  services.blueman.enable = true;
 
   networking.hostName = "ixnay";
   networking.networkmanager.enable = true;
@@ -61,11 +81,25 @@
     };
   };
 
-  services.desktopManager.cosmic.enable = true;
-  services.displayManager.cosmic-greeter.enable = true;
+  # services.desktopManager.cosmic.enable = true;
+  # services.displayManager.cosmic-greeter.enable = true;
+
+  services.displayManager = {
+    sddm = {
+      enable = true;
+      wayland.enable = true;
+    };
+    sessionPackages = [pkgs.sway];
+    defaultSession = "sway";
+  };
+
+  programs.sway = {
+    enable = true;
+    package = null;
+    wrapperFeatures.base = false;
+  };
 
   services.printing.enable = true;
-  hardware.pulseaudio.enable = false;
   services.pipewire = {
     enable = true;
     audio.enable = true;
@@ -74,6 +108,7 @@
     jack.enable = true;
     alsa.enable = true;
   };
+
   services.gnome.gnome-keyring.enable = true;
 
   users.users.qak = {
@@ -93,6 +128,8 @@
       curl
       bat
       man
+      man-pages
+      man-pages-posix
       zip
       unzip
       file
@@ -106,7 +143,6 @@
 
   xdg = {
     portal = {
-      wlr.enable = true;
       extraPortals = with pkgs; [xdg-desktop-portal-gtk xdg-desktop-portal-kde];
     };
   };
@@ -122,6 +158,16 @@
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
     __NV_PRIME_RENDER_OFFLOAD = 1;
     __VK_LAYER_NV_optimus = "NVIDIA_only";
+    # Wayland Stuff
+    NIXOS_OZONE_WL = 1;
+  };
+
+  documentation = {
+    dev.enable = true;
+    man = {
+      man-db.enable = false;
+      mandoc.enable = true;
+    };
   };
 
   programs.fish = {
@@ -131,15 +177,6 @@
       tree = "lsd --tree";
     };
     interactiveShellInit = ''
-      function paru-search
-          paru --color always -Ss $argv | less -r
-      end
-
-      function paru-clean
-          paru -Qtdq | paru -Rns -
-          paru -Qqd  | paru -Rsu -
-      end
-
       function fish_hybrid_key_bindings --description \
       "Vi-style bindings that inherit emacs-style bindings in all modes"
           for mode in default insert visual
@@ -157,7 +194,6 @@
     '';
   };
 
-  # services.tlp.enable = true;
   services.gvfs.enable = true;
   services.udisks2.enable = true;
   services.syncthing = {
@@ -181,14 +217,20 @@
     };
   };
 
-  nix.settings = {
-    experimental-features = ["nix-command" "flakes"];
-    trusted-public-keys = [
-      "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ="
-    ];
-    substituters = [
-      "https://cache.iog.io"
-    ];
+  nix = {
+    gc = {
+      dates = "weekly";
+      automatic = true;
+    };
+    settings = {
+      experimental-features = ["nix-command" "flakes"];
+      trusted-public-keys = [
+        "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ="
+      ];
+      substituters = [
+        "https://cache.iog.io"
+      ];
+    };
   };
   system.stateVersion = "23.11";
 }

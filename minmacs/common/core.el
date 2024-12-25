@@ -86,3 +86,6 @@
   (gcmh-high-cons-threshold (* 16 1024 1024))
   :config (gcmh-mode 1))
 
+;; === MIXED PITCH ===
+
+(use-package mixed-pitch :hook (text-mode . mixed-pitch-mode))
