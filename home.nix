@@ -1,4 +1,7 @@
-{pkgs, ...}: {
+{pkgs, ...}: let
+  getExe = pkgs.lib.meta.getExe;
+  getExe' = pkgs.lib.meta.getExe';
+in {
   home.username = "qak";
   home.homeDirectory = "/home/qak";
   home.stateVersion = "23.11";
@@ -76,10 +79,7 @@
 
   home.sessionVariables = {};
 
-  wayland.windowManager.sway = let
-    getExe = pkgs.lib.meta.getExe;
-    getExe' = pkgs.lib.meta.getExe';
-  in {
+  wayland.windowManager.sway = {
     enable = true;
     checkConfig = true;
     config = let
@@ -182,6 +182,31 @@
     '';
     wrapperFeatures.gtk = true;
     xwayland = true;
+  };
+
+  services.swayidle = let
+    swaylock = getExe pkgs.swaylock;
+    swaymsg = getExe' pkgs.sway "swaymsg";
+  in {
+    enable = true;
+    events = [
+      {
+        event = "after-resume";
+        command = "${swaymsg} 'output * power on'";
+      }
+      {
+        event = "before-sleep";
+        command = "${swaylock} -f -c 000000";
+      }
+    ];
+    extraArgs = [
+      "timeout"
+      "600"
+      "${swaylock} -f -c 000000"
+      "timeout"
+      "1200"
+      "${swaymsg} 'output * power off'"
+    ];
   };
 
   programs.wofi = {
