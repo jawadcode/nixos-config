@@ -84,7 +84,7 @@ in {
     checkConfig = true;
     config = let
       terminal = "${getExe pkgs.wezterm} start";
-      menu = "${getExe pkgs.wofi} --show drun --term '${terminal}'";
+      menu = "${getExe pkgs.wofi} --show drun --allow-markup --allow-images --prompt Application --term '${terminal}'";
     in {
       modifier = "Mod4";
       focus = {
