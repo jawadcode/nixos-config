@@ -384,8 +384,8 @@ in {
         "video/avi" = "vlc.desktop";
         "video/mp4" = "vlc.desktop";
         "video/webm" = "vlc.desktop";
-        "text/plain" = "codemacs.desktop";
-        "application/x-shellscript" = "codemacs.desktop";
+        "text/plain" = "emacsclient.desktop";
+        "application/x-shellscript" = "emacsclient.desktop";
         "application/pdf" = "org.gnome.Papers.desktop";
         "image/tiff" = "org.gnome.Papers.desktop";
         "application/postscript" = "org.gnome.Papers.desktop";
@@ -413,6 +413,15 @@ in {
   programs.emacs = {
     enable = true;
     package = pkgs.emacs30;
+  };
+
+  services.emacs = {
+    enable = true;
+    package = pkgs.emacs30;
+    client.enable = true;
+    defaultEditor = true;
+    extraOptions = ["--init-directory" "~/.config/emacs/codemacs"];
+    startWithUserSession = "graphical";
   };
 
   programs.firefox = {
@@ -452,7 +461,6 @@ in {
 
   programs.helix = {
     enable = true;
-    defaultEditor = true;
     languages = {
       language-server.biome = {
         command = "biome";

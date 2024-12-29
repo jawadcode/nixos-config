@@ -2,23 +2,28 @@
 
 ;; === USER INTERFACE STUFF ===
 
-(set-face-font 'default
-               (font-spec :family "Iosevka Term SS07"
-                          :size 18
-                          :weight 'normal
-                          :width 'normal
-                          :slant 'normal))
-(set-face-font 'fixed-pitch
-               (font-spec :family "Iosevka Term SS07"
-                          :size 18
-                          :weight 'normal
-                          :width 'normal
-                          :slant 'normal))
-(set-face-font 'variable-pitch
-               (font-spec :family "Roboto"
-                          :size 18
-                          :weight 'normal
-                          :width 'normal))
+(defun set-font ()
+	(set-face-font 'default
+								 (font-spec :family "Iosevka Term SS07"
+														:size 18
+														:weight 'normal
+														:width 'normal
+														:slant 'normal))
+	(set-face-font 'fixed-pitch
+								 (font-spec :family "Iosevka Term SS07"
+														:size 18
+														:weight 'normal
+														:width 'normal
+														:slant 'normal))
+	(set-face-font 'variable-pitch
+								 (font-spec :family "Roboto"
+														:size 18
+														:weight 'normal
+														:width 'normal)))
+
+(if (daemonp)
+		(add-hook 'server-after-make-frame-hook #'set-font)
+	(set-font))
 
 (if (eq system-type 'windows-nt)
     (when (member "Noto Emoji" (font-family-list))

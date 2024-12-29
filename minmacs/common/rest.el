@@ -34,6 +34,7 @@
 (use-package all-the-icons)
 
 (use-package dashboard
+	:if (< (length command-line-args) 2)
   :init (setq initial-buffer-choice 'dashboard-open)
   :custom
   (dashboard-startup-banner 'logo)
@@ -49,8 +50,7 @@
                                dashboard-insert-items))
   (dashboard-items '((recents . 10)
                      (projects . 10)))
-  :config
-  (dashboard-setup-startup-hook))
+  :config (dashboard-setup-startup-hook))
 
 (use-package centaur-tabs
   :custom
