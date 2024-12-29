@@ -59,6 +59,7 @@ in {
     brightnessctl
     glib
     gnome-characters
+    gtk3
     playerctl
     sway-contrib.grimshot
     swaybg
@@ -177,9 +178,10 @@ in {
       bindgesture swipe:3:left workspace next
 
       workspace 1 output eDP-1 DP-1 HDMI-A-2
-      workspace 2 output DP-1 HDMI-A-2 eDP-1
+      workspace 2 output DP-1 eDP-1 HDMI-A-2
       workspace 3 output HDMI-A-2 eDP-1 DP-1
     '';
+    extraOptions = ["--unsupported-gpu"];
     wrapperFeatures.gtk = true;
     xwayland = true;
   };
