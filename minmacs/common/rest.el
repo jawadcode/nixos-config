@@ -240,6 +240,7 @@
   (lsp-inlay-hint-enable t)
   (lsp-lens-enable t)
   (lsp-lens-place-position 'above-line)
+	(lsp-signature-render-documentation nil)
   :hook (lsp-mode . lsp-enable-which-key-integration)
   :config
   (defun lsp-booster--advice-json-parse (old-fn &rest args)

@@ -4,7 +4,7 @@
 in {
   home.username = "qak";
   home.homeDirectory = "/home/qak";
-  home.stateVersion = "23.11";
+  home.stateVersion = "24.11";
   home.packages = with pkgs; [
     # Apps (among other things)
     audacity
@@ -80,6 +80,26 @@ in {
 
   home.sessionVariables = {};
 
+  programs.fish = {
+    enable = true;
+    shellAbbrs = {
+      tree = "lsd --tree";
+    };
+    interactiveShellInit = ''
+      source (starship init fish --print-full-init | psub)
+
+      function fish_hybrid_key_bindings --description \
+      "Vi-style bindings that inherit emacs-style bindings in all modes"
+          for mode in default insert visual
+              fish_default_key_bindings -M $mode
+          end
+          fish_vi_key_bindings --no-erase
+      end
+
+      set -g fish_key_bindings fish_hybrid_key_bindings
+    '';
+  };
+
   wayland.windowManager.sway = {
     enable = true;
     checkConfig = true;
@@ -116,6 +136,7 @@ in {
           XF86MonBrightnessDown = "exec ${brightctl} set 5%-";
 
           XF86AudioPlay = "exec ${playerctl} play-pause";
+          "Mod4+Shift+P" = "exec ${playerctl} play-pause";
           XF86AudioNext = "exec ${playerctl} next";
           XF86AudioPrev = "exec ${playerctl} previous";
 
@@ -177,9 +198,9 @@ in {
       bindgesture swipe:3:right workspace prev
       bindgesture swipe:3:left workspace next
 
-      workspace 1 output eDP-1 DP-1 HDMI-A-2
-      workspace 2 output DP-1 eDP-1 HDMI-A-2
-      workspace 3 output HDMI-A-2 eDP-1 DP-1
+      workspace 1 output eDP-1
+      workspace 2 output DP-1
+      workspace 3 output HDMI-A-2
     '';
     extraOptions = ["--unsupported-gpu"];
     wrapperFeatures.gtk = true;
@@ -192,22 +213,24 @@ in {
   in {
     enable = true;
     events = [
-      {
-        event = "after-resume";
-        command = "${swaymsg} 'output * power on'";
-      }
+      # {
+      #   event = "after-resume";
+      #   command = ''${swaymsg} "output * dpms on"'';
+      # }
       {
         event = "before-sleep";
         command = "${swaylock} -f -c 000000";
       }
     ];
     extraArgs = [
+      "-w"
       "timeout"
       "600"
       "${swaylock} -f -c 000000"
       "timeout"
       "1200"
-      "${swaymsg} 'output * power off'"
+      # "${swaymsg} 'output * dpms off' && systemctl hybrid-sleep"
+      "systemctl hybrid-sleep"
     ];
   };
 
@@ -365,6 +388,8 @@ in {
     };
   };
 
+  # programs.nix-your-shell.enable = true;
+
   programs.nix-index.enable = true;
 
   xdg = {
@@ -392,7 +417,11 @@ in {
         "application/x-dvi" = "org.gnome.Papers.desktop";
       };
     };
-    userDirs.createDirectories.enable = true;
+    userDirs = {
+      enable = true;
+      createDirectories = true;
+    };
+    portal.xdgOpenUsePortal = true;
   };
 
   fonts.fontconfig = {
@@ -546,7 +575,10 @@ in {
     };
   };
 
-  programs.obs-studio.enable = true;
+  programs.obs-studio = {
+    enable = true;
+    plugins = [pkgs.obs-studio-plugins.wlrobs];
+  };
 
   programs.home-manager.enable = true;
 }

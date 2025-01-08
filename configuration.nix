@@ -93,7 +93,11 @@
   programs.sway = {
     enable = true;
     package = null;
-    wrapperFeatures.base = false;
+  };
+
+  xdg.portal = {
+    enable = true;
+    wlr.enable = true;
   };
 
   services.printing.enable = true;
@@ -131,17 +135,10 @@
       unzip
       file
       ntfs3g
-      nix-your-shell
       usbutils
       starship
     ];
     pathsToLink = ["/share/xdg-desktop-portal" "/share/applications"];
-  };
-
-  xdg = {
-    portal = {
-      extraPortals = with pkgs; [xdg-desktop-portal-gtk xdg-desktop-portal-kde];
-    };
   };
 
   environment.variables = {
@@ -169,27 +166,9 @@
 
   programs.fish = {
     enable = true;
-    useBabelfish = true;
-    shellAbbrs = {
-      tree = "lsd --tree";
-    };
-    interactiveShellInit = ''
-      function fish_hybrid_key_bindings --description \
-      "Vi-style bindings that inherit emacs-style bindings in all modes"
-          for mode in default insert visual
-              fish_default_key_bindings -M $mode
-          end
-          fish_vi_key_bindings --no-erase
-      end
-
-      set -g fish_key_bindings fish_hybrid_key_bindings
-
-      source (starship init fish --print-full-init | psub)
-    '';
-    shellInit = ''
-      nix-your-shell fish | source
-    '';
   };
+
+  programs.command-not-found.enable = false;
 
   services.gvfs.enable = true;
   services.udisks2.enable = true;
@@ -218,6 +197,7 @@
     gc = {
       dates = "weekly";
       automatic = true;
+      options = "--delete-older-than 1w";
     };
     settings = {
       experimental-features = ["nix-command" "flakes"];
@@ -227,7 +207,8 @@
       substituters = [
         "https://cache.iog.io"
       ];
+      auto-optimise-store = true;
     };
   };
-  system.stateVersion = "23.11";
+  system.stateVersion = "24.11";
 }

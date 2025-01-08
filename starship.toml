@@ -1,5 +1,6 @@
 [character]
 success_symbol = '[λx.](bold blue)'
+error_symbol = '[λx.](bold red)'
 
 [aws]
 format = '\[[$symbol($profile)(\($region\))(\[$duration\])]($style)\]'
