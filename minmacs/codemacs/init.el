@@ -82,4 +82,8 @@
                         (setq lsp-nix-nil-formatter ["alejandra" "-"])
                         (lsp-deferred)))))
 
+;; === DISCORD RICH PRESENCE ===
+
+(use-package elcord :bind ("<leader> d" . elcord-mode))
+
 (load (file-name-concat emacs-dir "common/load-env-vars.el"))

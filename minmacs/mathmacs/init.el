@@ -16,15 +16,21 @@
 ;; === LaTeX (with AUCTeX) ===
 
 (use-package pdf-tools
-	:mode ("\\.pdf\\'" . pdf-view-mode)
-	:config
-	(setq-default pdf-view-display-size 'fit-width)
-	(setq pdf-view-use-scaling t
-				pdf-view-use-imagemagick nil)
-	(add-hook 'pdf-view-mode-hook
-						(lambda ()
-							(setq-local evil-normal-state-cursor (list nil))))
-	(evil-make-overriding-map pdf-view-mode-map 'normal))
+  :mode ("\\.pdf\\'" . pdf-view-mode)
+  :hook (pdf-view-mode . evil-mode)
+  :custom
+  (pdf-view-display-size 'fit-width)
+  (pdf-view-use-imagemagick nil)
+  (pdf-view-use-scaling t)
+  :config
+  (evil-define-key 'normal pdf-view-mode-map
+    "h" 'pdf-view-previous-page-command
+    "j" (lambda () (pdf-view-next-line-or-next-page 5))
+    "k" (lambda () (pdf-view-previous-line-or-previous-page 5))
+    "l" 'pdf-view-next-page-command
+
+    "g" 'pdf-view-first-page
+    "G" 'pdf-view-last-page))
 
 (use-package latex
   :straight auctex
@@ -136,13 +142,13 @@
      (add-to-list 'TeX-view-program-selection '(output-pdf "PDF Tools"))
      (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer)))
 
-  (add-hook 'tex-mode-local-vars-hook #'lsp)
-  (add-hook 'latex-mode-local-vars-hook #'lsp)
-
   (require 'tex-fold)
   (add-hook 'LaTeX-mode-hook #'TeX-fold-mode)
   (require 'preview)
   (add-hook 'LaTeX-mode-hook #'LaTeX-preview-setup))
+
+(use-package lsp-latex
+  :hook (LaTeX-mode . lsp-deferred))
 
 (use-package auctex-latexmk
   :after latex
@@ -163,19 +169,16 @@
   :config (company-auctex-init))
 (use-package company-reftex
   :after latex
-  :config
-  (add-hook 'LaTeX-mode-hook
-            (lambda ()
-              (setq-local company-backends
-                          (append
-                           '(company-reftex-labels company-reftex-citations)
-                           company-backends)))))
+  :hook (LaTeX-mode . (lambda ()
+                        (setq-local company-backends
+                                    (append '( company-reftex-labels
+                                               company-reftex-citations)
+                                            company-backends)))))
 (use-package company-math
   :after latex
-  :config
-  (add-hook 'LaTeX-mode-hook
-            (lambda ()
-              (setq-local company-backends
-                          (append
-                           '(company-math-symbols-latex company-math-symbols-unicode company-latex-commands)
-                           company-backends)))))
+  :hook (LaTeX-mode . (lambda ()
+                        (setq-local company-backends
+                                    (append '( company-math-symbols-latex
+                                               company-math-symbols-unicode
+                                               company-latex-commands)
+                                            company-backends)))))

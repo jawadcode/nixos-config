@@ -23,6 +23,7 @@ in {
     nemo-fileroller
     obsidian
     papers
+    pavucontrol
     qalculate-gtk
     rhythmbox
     thunderbird
@@ -51,7 +52,6 @@ in {
     typst
     nil
     pyright # Need this pretty much everywhere for writing scripts
-    texlab
     # Minecraft
     temurin-jre-bin
     prismlauncher
@@ -60,6 +60,7 @@ in {
     glib
     gnome-characters
     gtk3
+    nix-your-shell
     playerctl
     sway-contrib.grimshot
     swaybg
@@ -97,6 +98,8 @@ in {
       end
 
       set -g fish_key_bindings fish_hybrid_key_bindings
+
+      ${getExe pkgs.nix-your-shell} fish | source
     '';
   };
 
@@ -373,6 +376,8 @@ in {
     gtk4.extraConfig.gtk-application-prefer-dark-theme = 1;
   };
 
+  services.gnome-keyring.enable = true;
+
   programs.git = let
     email = "jawad.w.ahmed@gmail.com";
   in {
@@ -387,8 +392,6 @@ in {
       credential.helper = "${pkgs.gitFull}/bin/git-credential-libsecret";
     };
   };
-
-  # programs.nix-your-shell.enable = true;
 
   programs.nix-index.enable = true;
 

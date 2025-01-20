@@ -10,29 +10,30 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
+  # Taken from https://github.com/NixOS/nixos-hardware/blob/master/common/gpu/intel/kaby-lake/default.nix
+  boot.kernelParams = [
+    "i915.enable_guc=2"
+    "i915.enable_fbc=1"
+    "i915.enable_psr=2"
+  ];
+
   hardware.enableAllFirmware = true;
-  hardware.graphics = {
-    enable = true;
-    extraPackages = with pkgs; [
-      intel-media-driver
-      intel-ocl
-      intel-vaapi-driver
-    ];
-  };
+  hardware.graphics.enable = true;
 
   console.keyMap = "uk";
 
-  # Hoping I don't need this cos I'm using wayland, though I guess it could help with XWayland.
-  services.xserver.videoDrivers = ["nvidia" "intel"];
+  services.xserver.videoDrivers = ["nvidia"];
 
   hardware.nvidia = {
-    modesetting.enable = true;
-    powerManagement.enable = true;
     open = false;
-    nvidiaSettings = true;
     package = config.boot.kernelPackages.nvidiaPackages.stable;
+    modesetting.enable = true;
+    powerManagement = {
+      enable = false;
+      finegrained = false;
+    };
     prime = {
-      offload.enable = true;
+      sync.enable = true;
       intelBusId = "PCI:0:2:0";
       nvidiaBusId = "PCI:1:0:0";
     };
@@ -54,6 +55,7 @@
       CPU_HWP_DYN_BOOST_ON_BAT = 0;
     };
   };
+  services.throttled.enable = true;
 
   hardware.bluetooth = {
     enable = true;
@@ -110,8 +112,6 @@
     alsa.enable = true;
   };
 
-  services.gnome.gnome-keyring.enable = true;
-
   users.users.qak = {
     isNormalUser = true;
     description = "Jawad Ahmed";
@@ -150,6 +150,8 @@
     __GL_GSYNC_ALLOWED = 0;
     __GL_VRR_ALLOWED = 0;
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
+    # I don't use prime render offload anymore since apparently my GPU isn't
+    # supported.
     __NV_PRIME_RENDER_OFFLOAD = 1;
     __VK_LAYER_NV_optimus = "NVIDIA_only";
     # Wayland Stuff
