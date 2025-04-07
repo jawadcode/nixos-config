@@ -8,14 +8,18 @@ in {
   home.packages = with pkgs; [
     # Apps (among other things)
     audacity
+    blueman
     btop
     ffmpeg
     discord
+    evince # Just for LaTeX in emacs
+    gcc # Just for tree-sitter in emacs
     glaxnimate
-    gnome-characters
     gnome-system-monitor
-    imv
+    eog
+    jetbrains-toolbox
     kdenlive
+    lan-mouse
     libreoffice-qt6-fresh
     libxml2
     kdePackages.mlt
@@ -33,18 +37,19 @@ in {
     xorg.xlsclients
     # Fonts
     font-awesome
-    hermit
+    ibm-plex
     (iosevka-bin.override {variant = "SS07";})
     (callPackage ./iosevka-term-ss07-nerd-font.nix {})
     noto-fonts
     noto-fonts-cjk-sans
     noto-fonts-color-emoji
-    paratype-pt-serif
     roboto
     # Language Tooling
-    emacs-lsp-booster
     alejandra # Nix formatter
+    comrak
     elan # Can't find any convenient way to create a flake
+    emacs-all-the-icons-fonts
+    emacs-lsp-booster
     python312Packages.pip
     python312Packages.python
     tinymist
@@ -53,33 +58,31 @@ in {
     nil
     pyright # Need this pretty much everywhere for writing scripts
     # Minecraft
-    temurin-jre-bin
-    prismlauncher
+    (prismlauncher.override {jdks = [temurin-jre-bin-17 temurin-jre-bin-21];})
     # Misc
     brightnessctl
-    glib
+    # glib
     gnome-characters
-    gtk3
+    # gtk3
     nix-your-shell
     playerctl
     sway-contrib.grimshot
     swaybg
+    wofi-emoji
     wl-clipboard
     yaru-theme
   ];
 
   home.file = {
-    ".config/emacs/codemacs/early-init.el".source = ./minmacs/codemacs/early-init.el;
-    ".config/emacs/codemacs/init.el".source = ./minmacs/codemacs/init.el;
-    ".config/emacs/mathmacs/early-init.el".source = ./minmacs/mathmacs/early-init.el;
-    ".config/emacs/mathmacs/init.el".source = ./minmacs/mathmacs/init.el;
-    ".config/emacs/common".source = ./minmacs/common;
+    ".config/emacs/init.el".source = ./emaxx/init.el;
+    ".config/emacs/early-init.el".source = ./emaxx/early-init.el;
     ".config/starship.toml".source = ./starship.toml;
-    ".local/share/applications/codemacs.desktop".source = ./codemacs.desktop;
-    ".local/share/applications/mathmacs.desktop".source = ./mathmacs.desktop;
+    ".local/share/applications/emaxx.desktop".source = ./emaxx.desktop;
   };
 
-  home.sessionVariables = {};
+  home.sessionVariables = {
+    BAT_THEME = "OneHalfDark";
+  };
 
   programs.fish = {
     enable = true;
@@ -108,14 +111,13 @@ in {
     checkConfig = true;
     config = let
       terminal = "${getExe pkgs.wezterm} start";
-      menu = "${getExe pkgs.wofi} --show drun --allow-markup --allow-images --prompt Application --term '${terminal}'";
+      menu = "${getExe pkgs.wofi} --show drun --allow-markup --allow-images --prompt Application";
     in {
       modifier = "Mod4";
       focus = {
         followMouse = true;
         mouseWarping = true;
       };
-      bars = [];
       fonts = {
         names = ["sans-serif"];
         style = "Regular";
@@ -146,12 +148,15 @@ in {
           XF86Search = "exec ${menu}";
 
           "Mod4+C" = "exec ${getExe pkgs.qalculate-gtk}";
-          "Mod4+Ctrl+C" = "exec ${getExe pkgs.gnome-characters}";
+          "Mod4+Ctrl+C" = "exec ${getExe pkgs.wofi-emoji}";
 
           "Print" = "exec ${grimshot} savecopy area";
           "Shift+Print" = "exec ${grimshot} savecopy window";
           "Ctrl+Print" = "exec ${grimshot} savecopy output";
           "Mod4+Print" = "exec ${grimshot} savecopy screen";
+
+          "Mod4+Shift+Delete" = "move scratchpad";
+          "Mod4+Delete" = "scratchpad show";
         };
       input = {
         "1:1:AT_Translated_Set_2_keyboard" = {xkb_layout = "gb";};
@@ -160,33 +165,108 @@ in {
           natural_scroll = "enabled";
           tap = "enabled";
         };
+        "2:10:TPPS/2_IBM_TrackPoint" = {
+          # accel_profile = "adaptive";
+          pointer_accel = "1";
+        };
       };
       output = let
         bg = resolution: mode: "${pkgs.sway}/share/backgrounds/sway/Sway_Wallpaper_Blue_${resolution}.png ${mode}";
       in {
-        eDP-1 = {
-          resolution = "1920x1080";
-          position = "0,1080";
-          bg = bg "1920x1080" "fill";
+        HDMI-A-2 = {
+          resolution = "2560x1440";
+          position = "0,0";
+          bg = "${./sway-background-2560x1440.png} fill";
         };
         DP-1 = {
           resolution = "1920x1080";
-          position = "0,0";
+          position = "2560,200";
+          bg = "${./sway-background-1080x1920.png} fill";
+          transform = "270";
+        };
+        eDP-1 = {
+          resolution = "1920x1080";
+          position = "640,1440";
           bg = bg "1920x1080" "fill";
         };
-        HDMI-A-2 = {
-          resolution = "1280x1024";
-          position = "1920,500";
-          bg = bg "1920x1080" "center";
-        };
       };
+      workspaceOutputAssign = [
+        {
+          output = "eDP-1";
+          workspace = "1";
+        }
+        {
+          output = "HDMI-A-2";
+          workspace = "2";
+        }
+        {
+          output = "DP-1";
+          workspace = "3";
+        }
+      ];
+
+      # 75Hz gaming configuration
+      # output = let
+      #   bg = resolution: mode: "${pkgs.sway}/share/backgrounds/sway/Sway_Wallpaper_Blue_${resolution}.png ${mode}";
+      # in {
+      #   eDP-1 = {
+      #     resolution = "1920x1080";
+      #     position = "1280,0";
+      #     bg = bg "1920x1080" "fill";
+      #   };
+      #   HDMI-A-2 = {
+      #     resolution = "1280x1024";
+      #     position = "0,0";
+      #     bg = bg "1920x1080" "center";
+      #   };
+      # };
+
+      # TV display cconfiguration
+      # output = let
+      #   bg = resolution: mode: "${pkgs.sway}/share/backgrounds/sway/Sway_Wallpaper_Blue_${resolution}.png ${mode}";
+      # in {
+      #   eDP-1 = {
+      #     resolution = "1920x1080";
+      #     position = "320,1440";
+      #     bg = bg "1920x1080" "fill";
+      #   };
+      #   HDMI-A-2 = {
+      #     resolution = "3840x2160@30Hz";
+      #     scale = "1.5";
+      #     position = "0,0";
+      #     bg = "${./sway-background-3840x2160.png} fill";
+      #   };
+      # };
+
+      # Library 4.36e Dual Monitor Setup
+      # output = let
+      #   bg = resolution: mode: "${pkgs.sway}/share/backgrounds/sway/Sway_Wallpaper_Blue_${resolution}.png ${mode}";
+      # in {
+      #   DP-6 = {
+      #     resolution = "3840x2160@60Hz";
+      #     position = "1920,0";
+      #     bg = "${./sway-background-3840x2160.png} fill";
+      #   };
+      #   eDP-1 = {
+      #     resolution = "1920x1080";
+      #     position = "0,1080";
+      #     bg = bg "1920x1080" "fill";
+      #   };
+      # };
+
+      bars = [
+        {command = getExe pkgs.waybar;}
+      ];
+
       floating = {
         border = 0;
-        criteria = [{class = "qalculate-gtk";}];
+        criteria = [{app_id = "qalculate-gtk";}];
       };
       startup = [
         {command = "${getExe pkgs.nwg-drawer} -r";}
         {command = "${getExe' pkgs.glib "gsettings"} set org.gnome.desktop.interface color-scheme prefer-dark";}
+        {command = "${getExe' pkgs.glib "gsettings"} set org.gnome.desktop.interface gtk-theme Yaru-blue-dark";}
+        {command = "${getExe' pkgs.glib "gsettings"} set org.gnome.desktop.interface icon-theme Yaru-blue-dark";}
       ];
       inherit terminal;
       window = {
@@ -212,14 +292,9 @@ in {
 
   services.swayidle = let
     swaylock = getExe pkgs.swaylock;
-    swaymsg = getExe' pkgs.sway "swaymsg";
   in {
     enable = true;
     events = [
-      # {
-      #   event = "after-resume";
-      #   command = ''${swaymsg} "output * dpms on"'';
-      # }
       {
         event = "before-sleep";
         command = "${swaylock} -f -c 000000";
@@ -232,8 +307,7 @@ in {
       "${swaylock} -f -c 000000"
       "timeout"
       "1200"
-      # "${swaymsg} 'output * dpms off' && systemctl hybrid-sleep"
-      "systemctl hybrid-sleep"
+      "systemctl hibernate"
     ];
   };
 
@@ -243,7 +317,7 @@ in {
 
   programs.waybar = {
     enable = true;
-    systemd.enable = true;
+    systemd.enable = false; # Cus of cosmic
     settings = let
       "sway/mode" = {
         format = ''<span style="italic">{}</span>'';
@@ -259,7 +333,7 @@ in {
     in [
       {
         layer = "top";
-        output = ["eDP-1" "DP-1"];
+        output = ["eDP-1" "DP-1" "HDMI-A-2"];
         position = "top";
         height = 32;
         spacing = 4;
@@ -336,18 +410,18 @@ in {
           on-click = "pavucontrol";
         };
       }
-      {
-        layer = "top";
-        output = ["HDMI-A-2"];
-        position = "top";
-        height = 32;
-        spacing = 4;
-        modules-left = ["sway/workspaces" "sway/mode" "sway/scratchpad"];
-        modules-center = ["sway/window"];
-        modules-right = [];
-        inherit "sway/mode";
-        inherit "sway/scratchpad";
-      }
+      # {
+      #   layer = "top";
+      #   output = ["HDMI-A-2"];
+      #   position = "top";
+      #   height = 32;
+      #   spacing = 4;
+      #   modules-left = ["sway/workspaces" "sway/mode" "sway/scratchpad"];
+      #   modules-center = ["sway/window"];
+      #   modules-right = [];
+      #   inherit "sway/mode";
+      #   inherit "sway/scratchpad";
+      # }
     ];
     style = ./waybar-style.css;
   };
@@ -366,17 +440,16 @@ in {
     };
   in {
     enable = true;
+    inherit theme;
     font = {
       name = "sans-serif";
       size = 12.0;
     };
-    iconTheme = theme;
-    theme = theme;
+    gtk3.extraConfig.gtk-theme-name = theme.name;
+    gtk4.extraConfig.gtk-theme-name = theme.name;
     gtk3.extraConfig.gtk-application-prefer-dark-theme = 1;
     gtk4.extraConfig.gtk-application-prefer-dark-theme = 1;
   };
-
-  services.gnome-keyring.enable = true;
 
   programs.git = let
     email = "jawad.w.ahmed@gmail.com";
@@ -412,8 +485,8 @@ in {
         "video/avi" = "vlc.desktop";
         "video/mp4" = "vlc.desktop";
         "video/webm" = "vlc.desktop";
-        "text/plain" = "emacsclient.desktop";
-        "application/x-shellscript" = "emacsclient.desktop";
+        "text/plain" = "emaxx.desktop";
+        "application/x-shellscript" = "emaxx.desktop";
         "application/pdf" = "org.gnome.Papers.desktop";
         "image/tiff" = "org.gnome.Papers.desktop";
         "application/postscript" = "org.gnome.Papers.desktop";
@@ -433,7 +506,7 @@ in {
       emoji = ["Noto Color Emoji"];
       monospace = ["Iosevka Term SS07"];
       sansSerif = ["Roboto"];
-      serif = ["PT Serif"];
+      serif = ["IBM Plex Serif"];
     };
   };
 
@@ -444,15 +517,15 @@ in {
 
   programs.emacs = {
     enable = true;
-    package = pkgs.emacs30;
+    package = pkgs.emacs;
+    extraPackages = epkgs: with epkgs; [treesit-grammars.with-all-grammars];
   };
 
   services.emacs = {
     enable = true;
-    package = pkgs.emacs30;
     client.enable = true;
     defaultEditor = true;
-    extraOptions = ["--init-directory" "~/.config/emacs/codemacs"];
+    extraOptions = ["--init-directory" "~/.config/emacs"];
     startWithUserSession = "graphical";
   };
 
@@ -483,7 +556,8 @@ in {
     extraConfig = ''
       return {
           front_end = "WebGpu",
-          color_scheme = 'Apple System Colors',
+          enable_wayland = false,
+          color_scheme = "Apple System Colors",
           font = wezterm.font_with_fallback({ "IosevkaTermSS07 Nerd Font", "Noto Color Emoji" }),
           font_size = 13.5,
           hide_tab_bar_if_only_one_tab = true,
@@ -494,70 +568,39 @@ in {
   programs.helix = {
     enable = true;
     languages = {
-      language-server.biome = {
-        command = "biome";
-        args = ["lsp-proxy"];
-      };
       language = let
-        common = {
-          indent = {
-            tab-width = 4;
-            unit = "    ";
-          };
-          auto-format = true;
-        };
-        js-common = {
-          language-servers = [
-            {
-              name = "typescript-language-server";
-              except-features = ["format"];
-            }
-            "biome"
-          ];
-          inherit (common) indent auto-format;
-        };
-      in [
-        {
-          name = "python";
-          language-servers = ["pyright"];
-          inherit (common) indent auto-format;
-        }
-        {
-          name = "c";
-          inherit (common) indent auto-format;
-        }
-        {
-          name = "cpp";
-          inherit (common) indent auto-format;
-        }
-        {
-          name = "javascript";
-          inherit (js-common) language-servers indent auto-format;
-        }
-        {
-          name = "typescript";
-          inherit (js-common) language-servers indent auto-format;
-        }
-        {
-          name = "tsx";
-          inherit (js-common) language-servers indent auto-format;
-        }
-        {
-          name = "jsx";
-          inherit (js-common) language-servers indent auto-format;
-        }
-        {
-          name = "json";
-          inherit (js-common) language-servers indent auto-format;
-        }
-        {
-          name = "nix";
-          formatter = {
-            command = "alejandra";
-          };
-          auto-format = true;
-        }
-      ];
+        applyCommon = lang:
+          {
+            indent = {
+              tab-width = 4;
+              unit = "    ";
+            };
+            auto-format = true;
+          }
+          // lang;
+      in
+        map
+        applyCommon
+        [
+          {
+            name = "python";
+            language-servers = ["pyright"];
+          }
+          {
+            name = "c";
+          }
+          {
+            name = "cpp";
+          }
+        ]
+        ++ [
+          {
+            name = "nix";
+            formatter = {
+              command = "alejandra";
+            };
+          }
+        ];
     };
     settings = {
       theme = "dark_plus";
@@ -578,9 +621,30 @@ in {
     };
   };
 
+  programs.vscode = {
+    enable = true;
+    userSettings = {
+      "editor.fontFamily" = "'Iosevka Term SS07'";
+      "editor.fontSize" = 18;
+    };
+    mutableExtensionsDir = false;
+    enableExtensionUpdateCheck = false;
+    enableUpdateCheck = false;
+    extensions = with pkgs.vscode-extensions; [
+      astro-build.astro-vscode
+      mkhl.direnv
+      myriad-dreamin.tinymist
+      ocamllabs.ocaml-platform
+      svelte.svelte-vscode
+      vscodevim.vim
+    ];
+  };
+
   programs.obs-studio = {
     enable = true;
-    plugins = [pkgs.obs-studio-plugins.wlrobs];
+    plugins = [
+      # pkgs.obs-studio-plugins.wlrobs
+    ];
   };
 
   programs.home-manager.enable = true;

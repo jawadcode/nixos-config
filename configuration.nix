@@ -17,6 +17,8 @@
     "i915.enable_psr=2"
   ];
 
+  boot.tmp.cleanOnBoot = true;
+
   hardware.enableAllFirmware = true;
   hardware.graphics.enable = true;
 
@@ -27,41 +29,39 @@
   hardware.nvidia = {
     open = false;
     package = config.boot.kernelPackages.nvidiaPackages.stable;
+    powerManagement.enable = true;
     modesetting.enable = true;
-    powerManagement = {
-      enable = false;
-      finegrained = false;
-    };
     prime = {
-      sync.enable = true;
+      offload.enable = true;
+
       intelBusId = "PCI:0:2:0";
       nvidiaBusId = "PCI:1:0:0";
     };
   };
 
-  services.tlp = {
-    enable = true;
-    settings = {
-      CPU_ENERGY_PERF_POLICY_ON_AC = "performance";
-      CPU_ENERGY_PERF_POLICY_ON_BAT = "balance_performance";
+  # services.tlp = {
+  #   enable = true;
+  #   settings = {
+  #     CPU_ENERGY_PERF_POLICY_ON_AC = "performance";
+  #     CPU_ENERGY_PERF_POLICY_ON_BAT = "balance_performance";
 
-      PLATFORM_PROFILE_ON_AC = "performance";
-      PLATFORM_PROFILE_ON_BAT = "balanced";
+  #     PLATFORM_PROFILE_ON_AC = "performance";
+  #     PLATFORM_PROFILE_ON_BAT = "balanced";
 
-      CPU_BOOST_ON_AC = 1;
-      CPU_BOOST_ON_BAT = 0;
+  #     CPU_BOOST_ON_AC = 1;
+  #     CPU_BOOST_ON_BAT = 0;
 
-      CPU_HWP_DYN_BOOST_ON_AC = 1;
-      CPU_HWP_DYN_BOOST_ON_BAT = 0;
-    };
-  };
+  #     CPU_HWP_DYN_BOOST_ON_AC = 1;
+  #     CPU_HWP_DYN_BOOST_ON_BAT = 0;
+  #   };
+  # };
   services.throttled.enable = true;
 
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = true;
   };
-  services.blueman.enable = true;
+  # services.blueman.enable = true;
 
   networking.hostName = "ixnay";
   networking.networkmanager.enable = true;
@@ -112,6 +112,8 @@
     alsa.enable = true;
   };
 
+  services.gnome.gnome-keyring.enable = true;
+
   users.users.qak = {
     isNormalUser = true;
     description = "Jawad Ahmed";
@@ -150,9 +152,8 @@
     __GL_GSYNC_ALLOWED = 0;
     __GL_VRR_ALLOWED = 0;
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
-    # I don't use prime render offload anymore since apparently my GPU isn't
-    # supported.
     __NV_PRIME_RENDER_OFFLOAD = 1;
+    __NV_PRIME_RENDER_OFFLOAD_PROVIDER="NVIDIA_G0";
     __VK_LAYER_NV_optimus = "NVIDIA_only";
     # Wayland Stuff
     NIXOS_OZONE_WL = 1;
@@ -184,13 +185,23 @@
         id = "XZ4UOLW-7CW4ZMO-2FLVN5D-65VMWWH-WASGCRR-NDBCV2Q-ARU2T2K-YAFMDAV";
         autoAcceptFolders = true;
       };
+      "jawad-raspberry" = {
+        id = "ZOKGVE7-DHS2NEP-JYUATBI-NC45L3S-RQ33PJ4-FOUS46V-BYXD4WA-STHKYAH";
+        autoAcceptFolders = true;
+      };
     };
     settings.folders = {
       "obsidian-notes" = {
         path = "/home/qak/Sync/notes";
         id = "y7k6u-akw7j";
         enable = true;
-        devices = ["Poco F2 Pro"];
+        devices = ["Poco F2 Pro" "jawad-raspberry"];
+      };
+      "mc-untitled-world-1" = {
+        path = "/home/qak/.local/share/PrismLauncher/instances/vanilla/minecraft/saves/Untitled World #1";
+        id = "mc-untitled-world-1";
+        enable = true;
+        devices = ["Poco F2 Pro" "jawad-raspberry"];
       };
     };
   };
@@ -199,17 +210,7 @@
     gc = {
       dates = "weekly";
       automatic = true;
-      options = "--delete-older-than 1w";
-    };
-    settings = {
-      experimental-features = ["nix-command" "flakes"];
-      trusted-public-keys = [
-        "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ="
-      ];
-      substituters = [
-        "https://cache.iog.io"
-      ];
-      auto-optimise-store = true;
+      options = "--delete-older-than 7d";
     };
   };
   system.stateVersion = "24.11";

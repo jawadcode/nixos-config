@@ -59,8 +59,8 @@
   (centaur-tabs-cycle-scope 'tabs)
   :hook (dashboard-mode . centaur-tabs-local-mode)
   :bind ( :map centaur-tabs-mode-map
-          ("<leader> t n" . centaur-tabs-forward)
-          ("<leader> t p" . centaur-tabs-backward))
+          ("<leader> b n" . centaur-tabs-forward)
+          ("<leader> b p" . centaur-tabs-backward))
   :config
   (centaur-tabs-change-fonts "Roboto" 140)
   (centaur-tabs-mode 1))
@@ -94,10 +94,6 @@
 (keymap-global-set "C-<wheel-up>"   #'text-scale-increase)
 (keymap-global-set "C-<wheel-down>" #'text-scale-decrease)
 
-(defvar-keymap jawad/buffer-map
-  :doc "My buffer keymap"
-  "k" #'kill-buffer)
-
 (defvar-keymap jawad/window-map
   :doc "My window keymap"
   "x" #'evil-window-delete
@@ -128,7 +124,6 @@
 (defvar-keymap jawad/global-map
   :doc "My global keymap"
   "f" jawad/file-map
-  "b" jawad/buffer-map
   "w" jawad/window-map
   "p" project-prefix-map
   "h" help-map)
@@ -194,12 +189,9 @@
   :after company
   :hook (company-mode . company-box-mode))
 
-(use-package yasnippet
-  :hook (prog-mode . yas-minor-mode)
-  :commands yas-minor-mode)
+(use-package yasnippet :hook (prog-mode . yas-minor-mode))
 
-(use-package yasnippet-snippets
-  :after (yasnippet))
+(use-package yasnippet-snippets)
 
 ;; === DIRENV (FOR NIX) ===
 
@@ -243,36 +235,36 @@
   (lsp-signature-render-documentation nil)
   :hook (lsp-mode . lsp-enable-which-key-integration)
   :config
-  ;; (defun lsp-booster--advice-json-parse (old-fn &rest args)
-  ;;   "Try to parse bytecode instead of json."
-  ;;   (or
-  ;;    (when (equal (following-char) ?#)
-  ;;      (let ((bytecode (read (current-buffer))))
-  ;;        (when (byte-code-function-p bytecode)
-  ;;          (funcall bytecode))))
-  ;;    (apply old-fn args)))
-  ;; (advice-add (if (progn (require 'json)
-  ;;                        (fboundp 'json-parse-buffer))
-  ;;                 'json-parse-buffer
-  ;;               'json-read)
-  ;;             :around
-  ;;             #'lsp-booster--advice-json-parse)
+  (defun lsp-booster--advice-json-parse (old-fn &rest args)
+    "Try to parse bytecode instead of json."
+    (or
+     (when (equal (following-char) ?#)
+       (let ((bytecode (read (current-buffer))))
+         (when (byte-code-function-p bytecode)
+           (funcall bytecode))))
+     (apply old-fn args)))
+  (advice-add (if (progn (require 'json)
+                         (fboundp 'json-parse-buffer))
+                  'json-parse-buffer
+                'json-read)
+              :around
+              #'lsp-booster--advice-json-parse)
 
-  ;; (defun lsp-booster--advice-final-command (old-fn cmd &optional test?)
-  ;;   "Prepend emacs-lsp-booster command to lsp CMD."
-  ;;   (let ((orig-result (funcall old-fn cmd test?)))
-  ;;     (if (and (not test?)                             ;; for check lsp-server-present?
-  ;;              (not (file-remote-p default-directory)) ;; see lsp-resolve-final-command, it would add extra shell wrapper
-  ;;              lsp-use-plists
-  ;;              (not (functionp 'json-rpc-connection))  ;; native json-rpc
-  ;;              (executable-find "emacs-lsp-booster"))
-  ;;         (progn
-  ;;           (when-let ((command-from-exec-path (executable-find (car orig-result))))  ;; resolve command from exec-path (in case not found in $PATH)
-  ;;             (setcar orig-result command-from-exec-path))
-  ;;           (message "Using emacs-lsp-booster for %s!" orig-result)
-  ;;           (cons "emacs-lsp-booster" orig-result))
-  ;;       orig-result)))
-  ;; (advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command)
+  (defun lsp-booster--advice-final-command (old-fn cmd &optional test?)
+    "Prepend emacs-lsp-booster command to lsp CMD."
+    (let ((orig-result (funcall old-fn cmd test?)))
+      (if (and (not test?)                             ;; for check lsp-server-present?
+               (not (file-remote-p default-directory)) ;; see lsp-resolve-final-command, it would add extra shell wrapper
+               lsp-use-plists
+               (not (functionp 'json-rpc-connection))  ;; native json-rpc
+               (executable-find "emacs-lsp-booster"))
+          (progn
+            (when-let ((command-from-exec-path (executable-find (car orig-result))))  ;; resolve command from exec-path (in case not found in $PATH)
+              (setcar orig-result command-from-exec-path))
+            (message "Using emacs-lsp-booster for %s!" orig-result)
+            (cons "emacs-lsp-booster" orig-result))
+        orig-result)))
+  (advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command)
   (evil-define-key 'normal lsp-mode-map (kbd "SPC l") lsp-command-map)
   :commands (lsp lsp-deferred))
 
