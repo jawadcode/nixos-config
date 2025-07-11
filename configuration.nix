@@ -7,7 +7,24 @@
     ./hardware-configuration.nix
   ];
 
-  boot.loader.systemd-boot.enable = true;
+  boot.loader.systemd-boot = {
+    enable = true;
+    extraInstallCommands = ''
+      default_cfg=$(${pkgs.coreutils}/bin/cat /boot/loader/loader.conf | ${pkgs.gnugrep}/bin/grep default | ${pkgs.gawk}/bin/awk '{print $2}')
+      tmp=$(${pkgs.coreutils}/bin/mktemp -d)
+
+      ${pkgs.coreutils}/bin/echo -ne "$default_cfg\0" | ${pkgs.iconv}/bin/iconv -f utf-8 -t utf-16le > $tmp/efivar.txt
+
+      ${pkgs.efivar}/bin/efivar -n 4a67b082-0a4c-41cf-b6c7-440b29bb8c4f-LoaderEntryLastBooted -w -f $tmp/efivar.txt
+      ${pkgs.systemd}/bin/bootctl set-default @saved
+    '';
+    extraEntries = {
+      "arch-grub.conf" = ''
+        title Arch (GRUB)
+        efi /efi/ARCH-GRUB/grubx64.efi
+      '';
+    };
+  };
   boot.loader.efi.canTouchEfiVariables = true;
 
   # Taken from https://github.com/NixOS/nixos-hardware/blob/master/common/gpu/intel/kaby-lake/default.nix
@@ -24,6 +41,13 @@
 
   console.keyMap = "uk";
 
+  # Tested these values in ThrottleStop on Windows 11.
+  services.undervolt = {
+    enable = true;
+    coreOffset = -90;
+    gpuOffset = -40;
+  };
+
   services.xserver.videoDrivers = ["nvidia"];
 
   hardware.nvidia = {
@@ -39,37 +63,46 @@
     };
   };
 
-  # services.tlp = {
-  #   enable = true;
-  #   settings = {
-  #     CPU_ENERGY_PERF_POLICY_ON_AC = "performance";
-  #     CPU_ENERGY_PERF_POLICY_ON_BAT = "balance_performance";
+  services.tlp = {
+    enable = true;
+    settings = {
+      START_CHARGE_THRESH_BAT0 = 75;
+      STOP_CHARGE_THRESH_BAT0 = 80;
 
-  #     PLATFORM_PROFILE_ON_AC = "performance";
-  #     PLATFORM_PROFILE_ON_BAT = "balanced";
+      START_CHARGE_THRESH_BAT1 = 75;
+      STOP_CHARGE_THRESH_BAT1 = 80;
 
-  #     CPU_BOOST_ON_AC = 1;
-  #     CPU_BOOST_ON_BAT = 0;
+      CPU_ENERGY_PERF_POLICY_ON_AC = "performance";
+      CPU_ENERGY_PERF_POLICY_ON_BAT = "balance_performance";
 
-  #     CPU_HWP_DYN_BOOST_ON_AC = 1;
-  #     CPU_HWP_DYN_BOOST_ON_BAT = 0;
-  #   };
-  # };
+      PLATFORM_PROFILE_ON_AC = "performance";
+      PLATFORM_PROFILE_ON_BAT = "balanced";
+
+      CPU_BOOST_ON_AC = 1;
+      CPU_BOOST_ON_BAT = 0;
+
+      CPU_HWP_DYN_BOOST_ON_AC = 1;
+      CPU_HWP_DYN_BOOST_ON_BAT = 0;
+    };
+  };
   services.throttled.enable = true;
+
+  services.timesyncd.enable = true;
 
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = true;
   };
-  # services.blueman.enable = true;
+  services.blueman.enable = true;
 
   networking.hostName = "ixnay";
   networking.networkmanager.enable = true;
+  services.avahi.enable = true;
 
   time.timeZone = "Europe/London";
 
   i18n = {
-    defaultLocale = "en_US.UTF-8";
+    defaultLocale = "en_GB.UTF-8";
     extraLocaleSettings = {
       LC_ADDRESS = "en_GB.UTF-8";
       LC_IDENTIFICATION = "en_GB.UTF-8";
@@ -102,7 +135,10 @@
     wlr.enable = true;
   };
 
-  services.printing.enable = true;
+  services.printing = {
+    enable = true;
+    drivers = [pkgs.hplip];
+  };
   services.pipewire = {
     enable = true;
     audio.enable = true;
@@ -123,6 +159,7 @@
 
   environment = {
     systemPackages = with pkgs; [
+      efivar
       dconf
       fd
       lsd
@@ -153,7 +190,7 @@
     __GL_VRR_ALLOWED = 0;
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
     __NV_PRIME_RENDER_OFFLOAD = 1;
-    __NV_PRIME_RENDER_OFFLOAD_PROVIDER="NVIDIA_G0";
+    __NV_PRIME_RENDER_OFFLOAD_PROVIDER = "NVIDIA_G0";
     __VK_LAYER_NV_optimus = "NVIDIA_only";
     # Wayland Stuff
     NIXOS_OZONE_WL = 1;
@@ -181,8 +218,13 @@
     dataDir = "/home/qak/Sync";
     systemService = true;
     settings.devices = {
-      "Poco F2 Pro" = {
-        id = "XZ4UOLW-7CW4ZMO-2FLVN5D-65VMWWH-WASGCRR-NDBCV2Q-ARU2T2K-YAFMDAV";
+      # Rest in Piss You Won't be Missed
+      # "Poco F2 Pro" = {
+      #   id = "XZ4UOLW-7CW4ZMO-2FLVN5D-65VMWWH-WASGCRR-NDBCV2Q-ARU2T2K-YAFMDAV";
+      #   autoAcceptFolders = true;
+      # };
+      "Pixel 9" = {
+        id = "RH3N6IR-ATFE5MF-LMK56NY-XC4FLSR-6B3LRXC-XS5SOH4-SE3L2IB-HZMSCQF";
         autoAcceptFolders = true;
       };
       "jawad-raspberry" = {
@@ -195,13 +237,13 @@
         path = "/home/qak/Sync/notes";
         id = "y7k6u-akw7j";
         enable = true;
-        devices = ["Poco F2 Pro" "jawad-raspberry"];
+        devices = ["Pixel 9" "jawad-raspberry"];
       };
       "mc-untitled-world-1" = {
         path = "/home/qak/.local/share/PrismLauncher/instances/vanilla/minecraft/saves/Untitled World #1";
         id = "mc-untitled-world-1";
         enable = true;
-        devices = ["Poco F2 Pro" "jawad-raspberry"];
+        devices = ["Pixel 9" "jawad-raspberry"];
       };
     };
   };

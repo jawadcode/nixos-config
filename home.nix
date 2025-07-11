@@ -8,7 +8,6 @@ in {
   home.packages = with pkgs; [
     # Apps (among other things)
     audacity
-    blueman
     btop
     ffmpeg
     discord
@@ -18,20 +17,24 @@ in {
     gnome-system-monitor
     eog
     jetbrains-toolbox
-    kdenlive
+    kdePackages.kdenlive
     lan-mouse
     libreoffice-qt6-fresh
     libxml2
     kdePackages.mlt
+    mullvad
     nemo
     nemo-fileroller
     obsidian
     papers
     pavucontrol
+    protonvpn-gui
     qalculate-gtk
     rhythmbox
+    spotify
     thunderbird
     tokei
+    ventoy
     vlc
     yt-dlp
     xorg.xlsclients
@@ -52,6 +55,7 @@ in {
     emacs-lsp-booster
     python312Packages.pip
     python312Packages.python
+    scrcpy
     tinymist
     tree-sitter
     typst
@@ -60,10 +64,9 @@ in {
     # Minecraft
     (prismlauncher.override {jdks = [temurin-jre-bin-17 temurin-jre-bin-21];})
     # Misc
+    android-tools
     brightnessctl
-    # glib
     gnome-characters
-    # gtk3
     nix-your-shell
     playerctl
     sway-contrib.grimshot
@@ -74,10 +77,10 @@ in {
   ];
 
   home.file = {
-    ".config/emacs/init.el".source = ./emaxx/init.el;
-    ".config/emacs/early-init.el".source = ./emaxx/early-init.el;
+    # ".config/emacs/init.el".source = ./emaxx/init.el;
+    # ".config/emacs/early-init.el".source = ./emaxx/early-init.el;
     ".config/starship.toml".source = ./starship.toml;
-    ".local/share/applications/emaxx.desktop".source = ./emaxx.desktop;
+    # ".local/share/applications/emaxx.desktop".source = ./emaxx.desktop;
   };
 
   home.sessionVariables = {
@@ -88,6 +91,7 @@ in {
     enable = true;
     shellAbbrs = {
       tree = "lsd --tree";
+      clean-crap = "nix-store --optimise && nix-collect-garbage -d && sudo nix-store --optimise && sudo nix-collect-garbage -d && sudo nixos-rebuild switch --flake ./";
     };
     interactiveShellInit = ''
       source (starship init fish --print-full-init | psub)
@@ -111,7 +115,7 @@ in {
     checkConfig = true;
     config = let
       terminal = "${getExe pkgs.wezterm} start";
-      menu = "${getExe pkgs.wofi} --show drun --allow-markup --allow-images --prompt Application";
+      menu = getExe pkgs.wofi;
     in {
       modifier = "Mod4";
       focus = {
@@ -142,13 +146,18 @@ in {
 
           XF86AudioPlay = "exec ${playerctl} play-pause";
           "Mod4+Shift+P" = "exec ${playerctl} play-pause";
+
           XF86AudioNext = "exec ${playerctl} next";
+          "Alt+Shift+N" = "exec ${playerctl} next";
+
           XF86AudioPrev = "exec ${playerctl} previous";
+          "Alt+Shift+P" = "exec ${playerctl} previous";
 
           XF86Search = "exec ${menu}";
 
           "Mod4+C" = "exec ${getExe pkgs.qalculate-gtk}";
           "Mod4+Ctrl+C" = "exec ${getExe pkgs.wofi-emoji}";
+          "Mod4+X" = "exec ${getExe pkgs.emacs}";
 
           "Print" = "exec ${grimshot} savecopy area";
           "Shift+Print" = "exec ${grimshot} savecopy window";
@@ -173,21 +182,21 @@ in {
       output = let
         bg = resolution: mode: "${pkgs.sway}/share/backgrounds/sway/Sway_Wallpaper_Blue_${resolution}.png ${mode}";
       in {
-        HDMI-A-2 = {
-          resolution = "2560x1440";
-          position = "0,0";
-          bg = "${./sway-background-2560x1440.png} fill";
-        };
-        DP-1 = {
-          resolution = "1920x1080";
-          position = "2560,200";
-          bg = "${./sway-background-1080x1920.png} fill";
-          transform = "270";
-        };
         eDP-1 = {
           resolution = "1920x1080";
           position = "640,1440";
           bg = bg "1920x1080" "fill";
+        };
+        DP-1 = {
+          resolution = "2560x1440@99.946Hz";
+          position = "0,0";
+          bg = "${./sway-background-2560x1440.png} fill";
+        };
+        HDMI-A-2 = {
+          resolution = "1920x1080";
+          position = "2560,0";
+          bg = "${./sway-background-1080x1920.png} fill";
+          transform = "270";
         };
       };
       workspaceOutputAssign = [
@@ -196,30 +205,14 @@ in {
           workspace = "1";
         }
         {
-          output = "HDMI-A-2";
+          output = "DP-1";
           workspace = "2";
         }
         {
-          output = "DP-1";
+          output = "HDMI-A-2";
           workspace = "3";
         }
       ];
-
-      # 75Hz gaming configuration
-      # output = let
-      #   bg = resolution: mode: "${pkgs.sway}/share/backgrounds/sway/Sway_Wallpaper_Blue_${resolution}.png ${mode}";
-      # in {
-      #   eDP-1 = {
-      #     resolution = "1920x1080";
-      #     position = "1280,0";
-      #     bg = bg "1920x1080" "fill";
-      #   };
-      #   HDMI-A-2 = {
-      #     resolution = "1280x1024";
-      #     position = "0,0";
-      #     bg = bg "1920x1080" "center";
-      #   };
-      # };
 
       # TV display cconfiguration
       # output = let
@@ -235,22 +228,6 @@ in {
       #     scale = "1.5";
       #     position = "0,0";
       #     bg = "${./sway-background-3840x2160.png} fill";
-      #   };
-      # };
-
-      # Library 4.36e Dual Monitor Setup
-      # output = let
-      #   bg = resolution: mode: "${pkgs.sway}/share/backgrounds/sway/Sway_Wallpaper_Blue_${resolution}.png ${mode}";
-      # in {
-      #   DP-6 = {
-      #     resolution = "3840x2160@60Hz";
-      #     position = "1920,0";
-      #     bg = "${./sway-background-3840x2160.png} fill";
-      #   };
-      #   eDP-1 = {
-      #     resolution = "1920x1080";
-      #     position = "0,1080";
-      #     bg = bg "1920x1080" "fill";
       #   };
       # };
 
@@ -313,6 +290,14 @@ in {
 
   programs.wofi = {
     enable = true;
+    settings = {
+      show = "drun";
+      allow_markup = true;
+      allow_images = true;
+      prompt = "Application";
+      term = "wezterm";
+      width = 640;
+    };
   };
 
   programs.waybar = {
@@ -333,7 +318,7 @@ in {
     in [
       {
         layer = "top";
-        output = ["eDP-1" "DP-1" "HDMI-A-2"];
+        output = ["eDP-1" "DP-1"];
         position = "top";
         height = 32;
         spacing = 4;
@@ -410,27 +395,31 @@ in {
           on-click = "pavucontrol";
         };
       }
-      # {
-      #   layer = "top";
-      #   output = ["HDMI-A-2"];
-      #   position = "top";
-      #   height = 32;
-      #   spacing = 4;
-      #   modules-left = ["sway/workspaces" "sway/mode" "sway/scratchpad"];
-      #   modules-center = ["sway/window"];
-      #   modules-right = [];
-      #   inherit "sway/mode";
-      #   inherit "sway/scratchpad";
-      # }
+      {
+        layer = "top";
+        output = ["HDMI-A-2"];
+        position = "top";
+        height = 32;
+        spacing = 4;
+        modules-left = ["sway/workspaces" "sway/mode" "sway/scratchpad"];
+        modules-center = ["sway/window"];
+        modules-right = [];
+        inherit "sway/mode";
+        inherit "sway/scratchpad";
+      }
     ];
     style = ./waybar-style.css;
   };
 
+  services.blueman-applet.enable = true;
+
   services.mako = {
     enable = true;
-    anchor = "top-center";
-    font = "sans-serif 12";
-    defaultTimeout = 5000;
+    settings = {
+      anchor = "top-center";
+      font = "sans-serif 12";
+      default-timeout = 5000;
+    };
   };
 
   gtk = let
@@ -521,13 +510,13 @@ in {
     extraPackages = epkgs: with epkgs; [treesit-grammars.with-all-grammars];
   };
 
-  services.emacs = {
-    enable = true;
-    client.enable = true;
-    defaultEditor = true;
-    extraOptions = ["--init-directory" "~/.config/emacs"];
-    startWithUserSession = "graphical";
-  };
+  # services.emacs = {
+  #   enable = true;
+  #   client.enable = true;
+  #   defaultEditor = true;
+  #   extraOptions = ["--init-directory" "~/.config/emacs"];
+  #   startWithUserSession = "graphical";
+  # };
 
   programs.firefox = {
     enable = true;
@@ -567,6 +556,7 @@ in {
 
   programs.helix = {
     enable = true;
+    defaultEditor = true;
     languages = {
       language = let
         applyCommon = lang:
@@ -623,27 +613,29 @@ in {
 
   programs.vscode = {
     enable = true;
-    userSettings = {
-      "editor.fontFamily" = "'Iosevka Term SS07'";
-      "editor.fontSize" = 18;
-    };
     mutableExtensionsDir = false;
-    enableExtensionUpdateCheck = false;
-    enableUpdateCheck = false;
-    extensions = with pkgs.vscode-extensions; [
-      astro-build.astro-vscode
-      mkhl.direnv
-      myriad-dreamin.tinymist
-      ocamllabs.ocaml-platform
-      svelte.svelte-vscode
-      vscodevim.vim
-    ];
+    profiles.default = {
+      userSettings = {
+        "editor.fontFamily" = "'Iosevka Term SS07'";
+        "editor.fontSize" = 18;
+      };
+      extensions = with pkgs.vscode-extensions; [
+        astro-build.astro-vscode
+        mkhl.direnv
+        myriad-dreamin.tinymist
+        ocamllabs.ocaml-platform
+        svelte.svelte-vscode
+        vscodevim.vim
+      ];
+      enableExtensionUpdateCheck = false;
+      enableUpdateCheck = false;
+    };
   };
 
   programs.obs-studio = {
     enable = true;
     plugins = [
-      # pkgs.obs-studio-plugins.wlrobs
+      pkgs.obs-studio-plugins.wlrobs
     ];
   };
 
