@@ -60,7 +60,8 @@ button:hover {
 #idle_inhibitor,
 #pulseaudio,
 #cpu,
-/* #memory, */
+#memory,
+#network,
 #temperature,
 #battery,
 #tray,
@@ -142,9 +143,9 @@ label:focus {
   color: #202020;
 }
 
-/* #memory {
-    background-color: #9b59b6;
-} */
+#memory {
+  background-color: #9b59b6;
+}
 
 #disk {
   background-color: #964B00;

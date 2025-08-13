@@ -114,7 +114,7 @@ in {
     enable = true;
     checkConfig = true;
     config = let
-      terminal = "${getExe pkgs.wezterm} start";
+      terminal = "${getExe pkgs.wezterm} -e";
       menu = getExe pkgs.wofi;
     in {
       modifier = "Mod4";
@@ -138,7 +138,9 @@ in {
       in
         pkgs.lib.mkOptionDefault {
           XF86AudioRaiseVolume = "exec ${wpctl} set-volume ${id} 5%+";
+          "Alt+Shift+Equal" = "exec ${wpctl} set-volume ${id} 5%+";
           XF86AudioLowerVolume = "exec ${wpctl} set-volume ${id} 5%-";
+          "Alt+Shift+Minus" = "exec ${wpctl} set-volume ${id} 5%-";
           XF86AudioMute = "exec ${wpctl} set-mute ${id} toggle";
 
           XF86MonBrightnessUp = "exec ${brightctl} set 5%+";
@@ -179,13 +181,11 @@ in {
           pointer_accel = "1";
         };
       };
-      output = let
-        bg = resolution: mode: "${pkgs.sway}/share/backgrounds/sway/Sway_Wallpaper_Blue_${resolution}.png ${mode}";
-      in {
+      output = {
         eDP-1 = {
           resolution = "1920x1080";
           position = "640,1440";
-          bg = bg "1920x1080" "fill";
+          bg = "${pkgs.sway}/share/backgrounds/sway/Sway_Wallpaper_Blue_1920x1080.png fill";
         };
         DP-1 = {
           resolution = "2560x1440@99.946Hz";
@@ -195,6 +195,7 @@ in {
         HDMI-A-2 = {
           resolution = "1920x1080";
           position = "2560,0";
+          # position = "2560,576";
           bg = "${./sway-background-1080x1920.png} fill";
           transform = "270";
         };
@@ -295,8 +296,37 @@ in {
       allow_markup = true;
       allow_images = true;
       prompt = "Application";
-      term = "wezterm";
+      term = "wezterm -e";
       width = 640;
+    };
+  };
+
+  xdg = {
+    mime.enable = true;
+    mimeApps = {
+      enable = true;
+      defaultApplications = {
+        "inode/directory" = "nemo.desktop";
+        "text/html" = "firefox.desktop";
+        "x-scheme-handler/http" = "firefox.desktop";
+        "x-scheme-handler/https" = "firefox.desktop";
+        "x-scheme-handler/about" = "firefox.desktop";
+        "x-scheme-handler/unknown" = "firefox.desktop";
+        "image/gif" = "imv.desktop";
+        "image/jpeg" = "imv.desktop";
+        "image/png" = "imv.desktop";
+        "application/ogg" = "org.gnome.Rhythmbox3.desktop";
+        "audio/x-mp3" = "org.gnome.Rhythmbox3.desktop";
+        "video/avi" = "vlc.desktop";
+        "video/mp4" = "vlc.desktop";
+        "video/webm" = "vlc.desktop";
+        "text/plain" = "emacs.desktop";
+        "application/x-shellscript" = "emacs.desktop";
+        "application/pdf" = "org.gnome.Evince.desktop";
+        "image/tiff" = "org.gnome.Evince.desktop";
+        "application/postscript" = "org.gnome.Evince.desktop";
+        "application/x-dvi" = "org.gnome.Evince.desktop";
+      };
     };
   };
 
@@ -315,11 +345,8 @@ in {
         tooltip = true;
         tooltip-format = "{app} = {title}";
       };
-    in [
-      {
-        layer = "top";
-        output = ["eDP-1" "DP-1"];
-        position = "top";
+      mkBar = outputs: {
+        output = outputs;
         height = 32;
         spacing = 4;
         modules-left = [
@@ -339,31 +366,31 @@ in {
         ];
         inherit "sway/mode";
         inherit "sway/scratchpad";
-        "tray" = {spacing = 10;};
-        "clock" = {
+        tray = {spacing = 10;};
+        clock = {
           tooltip-format = ''            <big>{:%Y %B}</big>
             <tt><small>{calendar}</small></tt>'';
           format-alt = ''{:%Y-%m-%d}'';
         };
-        "idle_inhibitor" = {
+        idle_inhibitor = {
           format = "{icon}";
           format-icons = {
             activated = "";
             deactivated = "";
           };
         };
-        "cpu" = {
+        cpu = {
           format = "{usage}% ";
           tooltip = false;
         };
-        "temperature" = {
+        temperature = {
           hwmon-path-abs = "/sys/devices/platform/coretemp.0/hwmon";
           input-filename = "temp2_input";
           critical-threshold = 80;
           format = "{temperatureC}°C {icon}";
           format-icons = ["" "" ""];
         };
-        "battery" = {
+        battery = {
           states = {
             good = 95;
             warning = 20;
@@ -376,7 +403,7 @@ in {
           format-alt = "{time} {icon}";
           format-icons = ["" "" "" "" ""];
         };
-        "pulseaudio" = {
+        pulseaudio = {
           format = "{volume}% {icon} {format_source}";
           format-bluetooth = "{volume}% {icon} {format_source}";
           format-bluetooth-muted = " {icon} {format_source}";
@@ -394,11 +421,35 @@ in {
           };
           on-click = "pavucontrol";
         };
-      }
+      };
+    in [
+      (mkBar ["eDP-1"])
+      ((mkBar ["DP-1"])
+        // {
+          modules-right = [
+            "idle_inhibitor"
+            "cpu"
+            "memory"
+            "network"
+            "temperature"
+            "battery"
+            "tray"
+            "clock"
+          ];
+          memory.format = "{used}/{total}GiB ({percentage}%) ";
+          network = {
+            format-wifi = "{essid} ({signalStrength}%) ";
+            format-ethernet = "{ipaddr}/{cidr} ";
+            tooltip-format = "{ifname} via {gwaddr} ";
+            format-linked = "{ifname} (No IP) ";
+            format-disconnected = "Disconnected ⚠";
+            format-alt = "{ifname}= {ipaddr}/{cidr}";
+          };
+        })
       {
-        layer = "top";
+        # layer = "top";
         output = ["HDMI-A-2"];
-        position = "top";
+        # position = "top";
         height = 32;
         spacing = 4;
         modules-left = ["sway/workspaces" "sway/mode" "sway/scratchpad"];
@@ -456,38 +507,6 @@ in {
   };
 
   programs.nix-index.enable = true;
-
-  xdg = {
-    mime.enable = true;
-    mimeApps = {
-      enable = true;
-      defaultApplications = {
-        "inode/directory" = "nemo.desktop";
-        "x-scheme-handler/https" = "firefox.desktop";
-        "x-scheme-handler/http" = "firefox.desktop";
-        "text/html" = "firefox.desktop";
-        "image/gif" = "imv.desktop";
-        "image/jpeg" = "imv.desktop";
-        "image/png" = "imv.desktop";
-        "application/ogg" = "org.gnome.Rhythmbox3.desktop";
-        "audio/x-mp3" = "org.gnome.Rhythmbox3.desktop";
-        "video/avi" = "vlc.desktop";
-        "video/mp4" = "vlc.desktop";
-        "video/webm" = "vlc.desktop";
-        "text/plain" = "emaxx.desktop";
-        "application/x-shellscript" = "emaxx.desktop";
-        "application/pdf" = "org.gnome.Papers.desktop";
-        "image/tiff" = "org.gnome.Papers.desktop";
-        "application/postscript" = "org.gnome.Papers.desktop";
-        "application/x-dvi" = "org.gnome.Papers.desktop";
-      };
-    };
-    userDirs = {
-      enable = true;
-      createDirectories = true;
-    };
-    portal.xdgOpenUsePortal = true;
-  };
 
   fonts.fontconfig = {
     enable = true;
@@ -630,13 +649,6 @@ in {
       enableExtensionUpdateCheck = false;
       enableUpdateCheck = false;
     };
-  };
-
-  programs.obs-studio = {
-    enable = true;
-    plugins = [
-      pkgs.obs-studio-plugins.wlrobs
-    ];
   };
 
   programs.home-manager.enable = true;

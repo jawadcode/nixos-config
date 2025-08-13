@@ -97,7 +97,10 @@
 
   networking.hostName = "ixnay";
   networking.networkmanager.enable = true;
-  services.avahi.enable = true;
+  services.avahi = {
+    enable = true;
+    nssmdns4 = true;
+  };
 
   time.timeZone = "Europe/London";
 
@@ -130,9 +133,17 @@
     package = null;
   };
 
-  xdg.portal = {
-    enable = true;
-    wlr.enable = true;
+  xdg = {
+    portal = {
+      enable = true;
+      wlr.enable = true;
+      xdgOpenUsePortal = true;
+      # extraPortals = [pkgs.xdg-desktop-portal-gtk];
+    };
+    terminal-exec = {
+      enable = true;
+      settings.default = ["org.wezfurlong.wezterm"];
+    };
   };
 
   services.printing = {
@@ -176,6 +187,7 @@
       ntfs3g
       usbutils
       starship
+      xdg-user-dirs
     ];
     pathsToLink = ["/share/xdg-desktop-portal" "/share/applications"];
   };
@@ -218,17 +230,12 @@
     dataDir = "/home/qak/Sync";
     systemService = true;
     settings.devices = {
-      # Rest in Piss You Won't be Missed
-      # "Poco F2 Pro" = {
-      #   id = "XZ4UOLW-7CW4ZMO-2FLVN5D-65VMWWH-WASGCRR-NDBCV2Q-ARU2T2K-YAFMDAV";
-      #   autoAcceptFolders = true;
-      # };
       "Pixel 9" = {
         id = "RH3N6IR-ATFE5MF-LMK56NY-XC4FLSR-6B3LRXC-XS5SOH4-SE3L2IB-HZMSCQF";
         autoAcceptFolders = true;
       };
-      "jawad-raspberry" = {
-        id = "ZOKGVE7-DHS2NEP-JYUATBI-NC45L3S-RQ33PJ4-FOUS46V-BYXD4WA-STHKYAH";
+      "hp-sauce" = {
+        id = "4WNPP3A-PBYNO7O-5J64I65-2LV4U3N-TAZCASN-VTMXSN7-7F2H2ZZ-BXXYXA2";
         autoAcceptFolders = true;
       };
     };
@@ -237,16 +244,18 @@
         path = "/home/qak/Sync/notes";
         id = "y7k6u-akw7j";
         enable = true;
-        devices = ["Pixel 9" "jawad-raspberry"];
+        devices = ["Pixel 9" "hp-sauce"];
       };
       "mc-untitled-world-1" = {
         path = "/home/qak/.local/share/PrismLauncher/instances/vanilla/minecraft/saves/Untitled World #1";
         id = "mc-untitled-world-1";
         enable = true;
-        devices = ["Pixel 9" "jawad-raspberry"];
+        devices = ["Pixel 9" "hp-sauce"];
       };
     };
   };
+
+  programs.obs-studio.enable = true;
 
   nix = {
     gc = {
