@@ -268,6 +268,19 @@ in {
     xwayland = true;
   };
 
+  home.pointerCursor = {
+    enable = true;
+    package = pkgs.posy-cursors;
+    dotIcons.enable = true;
+    gtk.enable = true;
+    name = "Posy_Cursor_Black";
+    sway.enable = true;
+    x11 = {
+      enable = true;
+      defaultCursor = "left_ptr";
+    };
+  };
+
   services.swayidle = let
     swaylock = getExe pkgs.swaylock;
   in {
@@ -300,6 +313,10 @@ in {
       width = 640;
     };
   };
+  # services.walker = {
+  #   enable = true;
+  #   systemd.enable = true;
+  # };
 
   xdg = {
     mime.enable = true;
