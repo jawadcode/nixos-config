@@ -654,10 +654,12 @@ in {
       userSettings = {
         "editor.fontFamily" = "'Iosevka Term SS07'";
         "editor.fontSize" = 18;
+        "rust-analyzer.server.path"= "rust-analyzer";
       };
       extensions = with pkgs.vscode-extensions; [
         astro-build.astro-vscode
         mkhl.direnv
+        rust-lang.rust-analyzer
         myriad-dreamin.tinymist
         ocamllabs.ocaml-platform
         svelte.svelte-vscode
