@@ -15,12 +15,12 @@ in {
     gcc # Just for tree-sitter in emacs
     glaxnimate
     gnome-system-monitor
-    eog
     jetbrains-toolbox
     kdePackages.kdenlive
     lan-mouse
     libreoffice-qt6-fresh
     libxml2
+    loupe
     kdePackages.mlt
     mullvad
     nemo
@@ -329,9 +329,9 @@ in {
         "x-scheme-handler/https" = "firefox.desktop";
         "x-scheme-handler/about" = "firefox.desktop";
         "x-scheme-handler/unknown" = "firefox.desktop";
-        "image/gif" = "imv.desktop";
-        "image/jpeg" = "imv.desktop";
-        "image/png" = "imv.desktop";
+        "image/gif" = "org.gnome.Loupe";
+        "image/jpeg" = "org.gnome.Loupe";
+        "image/png" = "org.gnome.Loupe";
         "application/ogg" = "org.gnome.Rhythmbox3.desktop";
         "audio/x-mp3" = "org.gnome.Rhythmbox3.desktop";
         "video/avi" = "vlc.desktop";
@@ -581,7 +581,7 @@ in {
     extraConfig = ''
       return {
           front_end = "WebGpu",
-          enable_wayland = false,
+          -- enable_wayland = false,
           color_scheme = "Apple System Colors",
           font = wezterm.font_with_fallback({ "IosevkaTermSS07 Nerd Font", "Noto Color Emoji" }),
           font_size = 13.5,
@@ -654,7 +654,7 @@ in {
       userSettings = {
         "editor.fontFamily" = "'Iosevka Term SS07'";
         "editor.fontSize" = 18;
-        "rust-analyzer.server.path"= "rust-analyzer";
+        "rust-analyzer.server.path" = "rust-analyzer";
       };
       extensions = with pkgs.vscode-extensions; [
         astro-build.astro-vscode

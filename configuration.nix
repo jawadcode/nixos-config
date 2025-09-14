@@ -39,6 +39,8 @@
   hardware.enableAllFirmware = true;
   hardware.graphics.enable = true;
 
+  boot.plymouth.enable = true;
+
   console.keyMap = "uk";
 
   # Tested these values in ThrottleStop on Windows 11.
