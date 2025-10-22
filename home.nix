@@ -1,7 +1,7 @@
 {pkgs, ...}: let
   getExe = pkgs.lib.meta.getExe;
   getExe' = pkgs.lib.meta.getExe';
-in {
+in rec {
   home.username = "qak";
   home.homeDirectory = "/home/qak";
   home.stateVersion = "24.11";
@@ -85,6 +85,7 @@ in {
 
   home.sessionVariables = {
     BAT_THEME = "OneHalfDark";
+    XDG_SCREENSHOTS_DIR = "${home.homeDirectory}/Pictures/Screenshots/";
   };
 
   programs.fish = {
@@ -581,6 +582,15 @@ in {
     extraConfig = ''
       return {
           front_end = "WebGpu",
+          webgpu_preferred_adapter = {
+            backend = "Vulkan",
+            device = 7440,
+            device_type = "DiscreteGpu",
+            driver = "NVIDIA",
+            driver_info = "570.195.03",
+            name = "NVIDIA GeForce MX150",
+            vendor = 4318,
+          },
           -- enable_wayland = false,
           color_scheme = "Apple System Colors",
           font = wezterm.font_with_fallback({ "IosevkaTermSS07 Nerd Font", "Noto Color Emoji" }),

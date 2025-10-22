@@ -7,39 +7,43 @@
     ./hardware-configuration.nix
   ];
 
-  boot.loader.systemd-boot = {
-    enable = true;
-    extraInstallCommands = ''
-      default_cfg=$(${pkgs.coreutils}/bin/cat /boot/loader/loader.conf | ${pkgs.gnugrep}/bin/grep default | ${pkgs.gawk}/bin/awk '{print $2}')
-      tmp=$(${pkgs.coreutils}/bin/mktemp -d)
+  boot = {
+    loader.systemd-boot = {
+      enable = true;
+      extraInstallCommands = ''
+        default_cfg=$(${pkgs.coreutils}/bin/cat /boot/loader/loader.conf | ${pkgs.gnugrep}/bin/grep default | ${pkgs.gawk}/bin/awk '{print $2}')
+        tmp=$(${pkgs.coreutils}/bin/mktemp -d)
 
-      ${pkgs.coreutils}/bin/echo -ne "$default_cfg\0" | ${pkgs.iconv}/bin/iconv -f utf-8 -t utf-16le > $tmp/efivar.txt
+        ${pkgs.coreutils}/bin/echo -ne "$default_cfg\0" | ${pkgs.iconv}/bin/iconv -f utf-8 -t utf-16le > $tmp/efivar.txt
 
-      ${pkgs.efivar}/bin/efivar -n 4a67b082-0a4c-41cf-b6c7-440b29bb8c4f-LoaderEntryLastBooted -w -f $tmp/efivar.txt
-      ${pkgs.systemd}/bin/bootctl set-default @saved
-    '';
-    extraEntries = {
-      "arch-grub.conf" = ''
-        title Arch (GRUB)
-        efi /efi/ARCH-GRUB/grubx64.efi
+        ${pkgs.efivar}/bin/efivar -n 4a67b082-0a4c-41cf-b6c7-440b29bb8c4f-LoaderEntryLastBooted -w -f $tmp/efivar.txt
+        ${pkgs.systemd}/bin/bootctl set-default @saved
       '';
+      extraEntries = {
+        "arch-grub.conf" = ''
+          title Arch (GRUB)
+          efi /efi/ARCH-GRUB/grubx64.efi
+        '';
+      };
     };
+    loader.efi.canTouchEfiVariables = true;
+
+    # Taken from https://github.com/NixOS/nixos-hardware/blob/master/common/gpu/intel/kaby-lake/default.nix
+    kernelParams = [
+      "i915.enable_guc=2"
+      "i915.enable_fbc=1"
+      "i915.enable_psr=2"
+      # "nvidia_drm.modeset=1"
+      # "nvidia_drm.fbdev=1"
+      # "nvidia.NVreg_PreserveVideoMemoryAllocations=1"
+    ];
+
+    plymouth.enable = true;
+    tmp.cleanOnBoot = true;
   };
-  boot.loader.efi.canTouchEfiVariables = true;
-
-  # Taken from https://github.com/NixOS/nixos-hardware/blob/master/common/gpu/intel/kaby-lake/default.nix
-  boot.kernelParams = [
-    "i915.enable_guc=2"
-    "i915.enable_fbc=1"
-    "i915.enable_psr=2"
-  ];
-
-  boot.tmp.cleanOnBoot = true;
 
   hardware.enableAllFirmware = true;
   hardware.graphics.enable = true;
-
-  boot.plymouth.enable = true;
 
   console.keyMap = "uk";
 
@@ -55,7 +59,7 @@
   hardware.nvidia = {
     open = false;
     package = config.boot.kernelPackages.nvidiaPackages.stable;
-    powerManagement.enable = true;
+    # powerManagement.enable = true;
     modesetting.enable = true;
     prime = {
       offload.enable = true;
@@ -198,6 +202,7 @@
     # Firefox
     MOZ_ENABLE_WAYLAND = 1;
     MOZ_USE_XINPUT2 = 1;
+
     # Graphics stuff
     GBM_BACKEND = "nvidia-drm";
     __GL_GSYNC_ALLOWED = 0;
@@ -206,6 +211,7 @@
     __NV_PRIME_RENDER_OFFLOAD = 1;
     __NV_PRIME_RENDER_OFFLOAD_PROVIDER = "NVIDIA_G0";
     __VK_LAYER_NV_optimus = "NVIDIA_only";
+
     # Wayland Stuff
     NIXOS_OZONE_WL = 1;
   };
@@ -231,30 +237,30 @@
     user = "qak";
     dataDir = "/home/qak/Sync";
     systemService = true;
-    settings.devices = {
-      "Pixel 9" = {
-        id = "RH3N6IR-ATFE5MF-LMK56NY-XC4FLSR-6B3LRXC-XS5SOH4-SE3L2IB-HZMSCQF";
-        autoAcceptFolders = true;
-      };
-      "hp-sauce" = {
-        id = "4WNPP3A-PBYNO7O-5J64I65-2LV4U3N-TAZCASN-VTMXSN7-7F2H2ZZ-BXXYXA2";
-        autoAcceptFolders = true;
-      };
-    };
-    settings.folders = {
-      "obsidian-notes" = {
-        path = "/home/qak/Sync/notes";
-        id = "y7k6u-akw7j";
-        enable = true;
-        devices = ["Pixel 9" "hp-sauce"];
-      };
-      "mc-untitled-world-1" = {
-        path = "/home/qak/.local/share/PrismLauncher/instances/vanilla/minecraft/saves/Untitled World #1";
-        id = "mc-untitled-world-1";
-        enable = true;
-        devices = ["Pixel 9" "hp-sauce"];
-      };
-    };
+    # settings.devices = {
+    #   "Pixel 9" = {
+    #     id = "RH3N6IR-ATFE5MF-LMK56NY-XC4FLSR-6B3LRXC-XS5SOH4-SE3L2IB-HZMSCQF";
+    #     autoAcceptFolders = true;
+    #   };
+    #   "hp-sauce" = {
+    #     id = "4WNPP3A-PBYNO7O-5J64I65-2LV4U3N-TAZCASN-VTMXSN7-7F2H2ZZ-BXXYXA2";
+    #     autoAcceptFolders = true;
+    #   };
+    # };
+    # settings.folders = {
+    #   "obsidian-notes" = {
+    #     path = "/home/qak/Sync/notes";
+    #     id = "y7k6u-akw7j";
+    #     enable = true;
+    #     devices = ["Pixel 9" "hp-sauce"];
+    #   };
+    #   "mc-untitled-world-1" = {
+    #     path = "/home/qak/.local/share/PrismLauncher/instances/vanilla/minecraft/saves/Untitled World #1";
+    #     id = "mc-untitled-world-1";
+    #     enable = true;
+    #     devices = ["Pixel 9" "hp-sauce"];
+    #   };
+    # };
   };
 
   programs.obs-studio.enable = true;
