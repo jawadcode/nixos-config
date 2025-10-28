@@ -185,11 +185,12 @@ in rec {
       output = {
         eDP-1 = {
           resolution = "1920x1080";
+          # position = "576,1728";
           position = "640,1440";
           bg = "${pkgs.sway}/share/backgrounds/sway/Sway_Wallpaper_Blue_1920x1080.png fill";
         };
         DP-1 = {
-          resolution = "2560x1440@99.946Hz";
+          resolution = "2560x1440";
           position = "0,0";
           bg = "${./sway-background-2560x1440.png} fill";
         };
@@ -200,6 +201,12 @@ in rec {
           bg = "${./sway-background-1080x1920.png} fill";
           transform = "270";
         };
+        # DP-4 = {
+        #   resolution = "3840x2160";
+        #   position = "0,0";
+        #   scale = "1.25";
+        #   bg = "${./sway-background-3840x2160.png} fill";
+        # };
       };
       workspaceOutputAssign = [
         {
@@ -214,24 +221,11 @@ in rec {
           output = "HDMI-A-2";
           workspace = "3";
         }
+        # {
+        #   output = "DP-4";
+        #   workspace = "2";
+        # }
       ];
-
-      # TV display cconfiguration
-      # output = let
-      #   bg = resolution: mode: "${pkgs.sway}/share/backgrounds/sway/Sway_Wallpaper_Blue_${resolution}.png ${mode}";
-      # in {
-      #   eDP-1 = {
-      #     resolution = "1920x1080";
-      #     position = "320,1440";
-      #     bg = bg "1920x1080" "fill";
-      #   };
-      #   HDMI-A-2 = {
-      #     resolution = "3840x2160@30Hz";
-      #     scale = "1.5";
-      #     position = "0,0";
-      #     bg = "${./sway-background-3840x2160.png} fill";
-      #   };
-      # };
 
       bars = [
         {command = getExe pkgs.waybar;}
@@ -263,9 +257,10 @@ in rec {
       workspace 1 output eDP-1
       workspace 2 output DP-1
       workspace 3 output HDMI-A-2
+      # workspace 2 output DP-4
     '';
     extraOptions = ["--unsupported-gpu"];
-    wrapperFeatures.gtk = true;
+    # wrapperFeatures.gtk = true;
     xwayland = true;
   };
 
@@ -476,6 +471,28 @@ in rec {
         inherit "sway/mode";
         inherit "sway/scratchpad";
       }
+      # ((mkBar ["DP-4"])
+      #   // {
+      #     modules-right = [
+      #       "idle_inhibitor"
+      #       "cpu"
+      #       "memory"
+      #       "network"
+      #       "temperature"
+      #       "battery"
+      #       "tray"
+      #       "clock"
+      #     ];
+      #     memory.format = "{used}/{total}GiB ({percentage}%) ";
+      #     network = {
+      #       format-wifi = "{essid} ({signalStrength}%) ";
+      #       format-ethernet = "{ipaddr}/{cidr} ";
+      #       tooltip-format = "{ifname} via {gwaddr} ";
+      #       format-linked = "{ifname} (No IP) ";
+      #       format-disconnected = "Disconnected ⚠";
+      #       format-alt = "{ifname}= {ipaddr}/{cidr}";
+      #     };
+      #   })
     ];
     style = ./waybar-style.css;
   };

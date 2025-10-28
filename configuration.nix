@@ -59,7 +59,7 @@
   hardware.nvidia = {
     open = false;
     package = config.boot.kernelPackages.nvidiaPackages.stable;
-    # powerManagement.enable = true;
+    powerManagement.enable = true;
     modesetting.enable = true;
     prime = {
       offload.enable = true;
@@ -193,6 +193,7 @@
       ntfs3g
       usbutils
       starship
+      xdg-utils
       xdg-user-dirs
     ];
     pathsToLink = ["/share/xdg-desktop-portal" "/share/applications"];
