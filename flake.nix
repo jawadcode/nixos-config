@@ -1,60 +1,41 @@
 {
-  description = "Ixnay Configuration";
-
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
-
-    home-manager.url = "github:nix-community/home-manager/release-25.05";
-    home-manager.inputs.nixpkgs.follows = "nixpkgs";
-
-    # wrapper-manager = {
-    #   url = "github:ViperML/wrapper-manager";
-    #   inputs.nixpkgs.follows = "nixpkgs";
-    # };
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
   };
-
-  outputs = inputs @ {
+  outputs = _inputs @ {
+    self,
     nixpkgs,
-    home-manager,
-    # wrapper-manager,
     ...
   }: {
-    nixosConfigurations = {
-      ixnay = let
-        pkgs = import nixpkgs {
-          system = "x86_64-linux";
-          config = {
-            permittedInsecurePackages = ["ventoy-1.1.05"];
-            allowUnfree = true;
-          };
-        };
-      in
-        nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-          inherit pkgs;
-          modules = [
-            {
-              nix.settings = {
-                substituters = [
-                  "https://cache.iog.io"
-                ];
-                trusted-public-keys = [
-                  "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ="
-                ];
-                experimental-features = ["nix-command" "flakes"];
-                auto-optimise-store = true;
-              };
-            }
-            home-manager.nixosModules.home-manager
-            {
-              home-manager.useGlobalPkgs = true;
-              home-manager.useUserPackages = true;
-              home-manager.users.qak = import ./home.nix;
-            }
-            ./configuration.nix
-          ];
-          specialArgs = {inherit inputs;};
-        };
-    };
+    nixosConfigurations.allbuch-nix = let
+      system = "x86_64-linux";
+      pkgs = import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+      };
+    in
+      nixpkgs.lib.nixosSystem {
+        inherit system pkgs;
+        modules = [
+          {
+            # nixpkgs.overlays = [
+            #   (import (
+            #     builtins.fetchTarball {
+            #       url = "https://github.com/nix-community/emacs-overlay/archive/27ced263ed6b7a6968f9f449d66aa299cb0f14a7.zip"; # ugh
+            #       sha256 = "sha256:0v6pl0zhs476hdfxdhaqk8y5nvibk4nra6rqxmfrq8a7fh230vv2";
+            #     }
+            #   ))
+            # ];
+            nix.settings = {
+              experimental-features = [
+                "nix-command"
+                "flakes"
+              ];
+              auto-optimise-store = true;
+            };
+          }
+          ./configuration.nix
+        ];
+      };
   };
 }

@@ -1,1 +1,0 @@
-nix-shell -p imagemagick.out --run 'magick sway-background-3840x2160.png -crop 2560x1440+640+360 sway-background-2560x1440.png'
