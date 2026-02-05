@@ -19,11 +19,12 @@
           ${pkgs.efivar}/bin/efivar -n 4a67b082-0a4c-41cf-b6c7-440b29bb8c4f-LoaderEntryLastBooted -w -f $tmp/efivar.txt
           ${pkgs.systemd}/bin/bootctl set-default @saved
         '';
-        # extraEntries = {
-        #   "fedora-grub.conf" = ''
-        #     title Fedora (GRUB)
-        #     efi /EFI/fedora/grubx64.efi
-        #   '';
+        extraEntries = {
+          "arch-grub.conf" = ''
+            title Arch (GRUB)
+            efi /efi/ARCH-GRUB/grubx64.efi
+          '';
+        };
         # };
       };
       efi.canTouchEfiVariables = true;
