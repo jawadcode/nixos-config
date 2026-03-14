@@ -159,6 +159,7 @@
           temurin-jre-bin-21
         ];
       })
+      jellyfin-desktop
 
       nerd-fonts.symbols-only
       sqlite
