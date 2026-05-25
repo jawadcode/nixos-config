@@ -25,11 +25,17 @@
             efi /efi/ARCH-GRUB/grubx64.efi
           '';
         };
-        # };
       };
       efi.canTouchEfiVariables = true;
     };
     kernelPackages = pkgs.linuxPackages_latest;
+    kernelParams = [
+      "systemd.swap=0"
+      "zswap.enabled=1" # enables zswap
+      "zswap.compressor=zstd" # compression algorithm
+      "zswap.max_pool_percent=20" # maximum percentage of RAM that zswap is allowed to use
+      "zswap.shrinker_enabled=1" # whether to shrink the pool proactively on high memory pressure
+    ];
     plymouth.enable = true;
     tmp.cleanOnBoot = true;
   };
@@ -43,6 +49,26 @@
     graphics.enable = true;
   };
 
+  services.tlp = {
+    enable = true;
+    settings = {
+      START_CHARGE_THRESH_BAT0 = 75;
+      STOP_CHARGE_THRESH_BAT0 = 80;
+
+      CPU_ENERGY_PERF_POLICY_ON_AC = "performance";
+      CPU_ENERGY_PERF_POLICY_ON_BAT = "balance_performance";
+      CPU_ENERGY_PERF_POLICY_ON_SAV = "power";
+
+      PLATFORM_PROFILE_ON_AC = "performance";
+      PLATFORM_PROFILE_ON_BAT = "balanced";
+      PLATFORM_PROFILE_ON_SAV = "low-power";
+
+      CPU_BOOST_ON_AC = 1;
+      CPU_BOOST_ON_BAT = 0;
+      CPU_BOOST_ON_SAV = 0;
+    };
+  };
+
   security = {
     polkit.enable = true;
     pam.services = {
@@ -52,22 +78,22 @@
   };
 
   systemd.user.services.kanshi = {
-    description = "kanshi daemon";
+    description = "Kanshi daemon";
     environment = {
       WAYLAND_DISPLAY = "wayland-1";
       DISPLAY = ":0";
     };
     # requires = ["graphical.target"];
-    # after = ["graphical.target"];
+    # after = ["sway-session.target"];
     serviceConfig = {
       Type = "simple";
       # ExecStartPre = ''${lib.meta.getExe' pkgs.coreutils-full "sleep"} 5'';
-      ExecStart = ''${lib.meta.getExe pkgs.kanshi} -c /home/qak/.config/kanshi/config'';
+      ExecStart = "${lib.meta.getExe pkgs.kanshi} -c /home/qak/.config/kanshi/config";
     };
   };
 
   networking = {
-    hostName = "allbuch-nix";
+    hostName = "hp-sauce";
     networkmanager.enable = true;
   };
 
@@ -135,7 +161,9 @@
       shellcheck
       shfmt
 
+      # Try to sort out themeing situation without home-manager
       yaru-theme
+      posy-cursors
 
       (nemo-with-extensions.override {
         extensions = [
@@ -152,6 +180,7 @@
       obsidian
       vscode
       protonvpn-gui
+      inkscape-with-extensions
       kdePackages.kdenlive
       (prismlauncher.override {
         jdks = [
@@ -285,7 +314,11 @@
   services.greetd.enable = true;
   programs.regreet = {
     enable = true;
-    cageArgs = ["-s" "-m" "last"];
+    cageArgs = [
+      "-s"
+      "-m"
+      "last"
+    ];
   };
 
   programs.dconf.profiles.user = {
@@ -318,7 +351,6 @@
       playerctl
       mako
       wl-clipboard
-      posy-cursors
     ];
   };
 
@@ -330,7 +362,7 @@
     portal = {
       enable = true;
       wlr.enable = true;
-      extraPortals = [pkgs.xdg-desktop-portal-gtk];
+      # extraPortals = [pkgs.xdg-desktop-portal-gtk];
       xdgOpenUsePortal = true;
     };
     terminal-exec = {
@@ -372,6 +404,8 @@
     pulse.enable = true;
   };
 
+  services.mpd.enable = true;
+
   services.syncthing = {
     enable = true;
     user = "qak";
@@ -386,7 +420,7 @@
       (iosevka-bin.override {variant = "SS07";})
       noto-fonts
       noto-fonts-color-emoji
-      font-awesome
+      font-awesome_6
     ];
     fontconfig = {
       enable = true;
@@ -429,20 +463,21 @@
       NoDefaultBookmarks = true;
       OfferToSaveLogins = false;
       PasswordManagerEnabled = false;
-      SearchEngines = {
-        Add = [
-          {
-            Name = "Startpage";
-            URLTemplate = "https://www.startpage.com/sp/search?query={searchTerms}&abp=0&abe=0&t=device&lui=english&sc=w47g7LtL57nG20&cat=web&abd=0&abe=0&prfe=48b70904004aaca120d6c9c9ab32a11c0ab13aae089bf2b57993bd9f7422ba9de2a6b22f602a52adfc5ab8316fce6c3aa5c828b804229ffbe1af9e4ba5b9eb3d666088d848857df6c7f2fd13";
-            Method = "GET";
-            IconURL = "https://www.startpage.com/favicon.ico";
-            Alias = "startpage";
-            Description = "Startpage Search";
-            SuggestURLTemplate = "https://www.startpage.com/osuggestions?q={searchTerms}";
-          }
-        ];
-        Default = "Startpage";
-      };
+      # # Conflicts with the startpage extension
+      # SearchEngines = {
+      #   Add = [
+      #     {
+      #       Name = "Startpage";
+      #       URLTemplate = "https://www.startpage.com/sp/search?query={searchTerms}&abp=0&abe=0&t=device&lui=english&sc=w47g7LtL57nG20&cat=web&abd=0&abe=0&prfe=48b70904004aaca120d6c9c9ab32a11c0ab13aae089bf2b57993bd9f7422ba9de2a6b22f602a52adfc5ab8316fce6c3aa5c828b804229ffbe1af9e4ba5b9eb3d666088d848857df6c7f2fd13";
+      #       Method = "GET";
+      #       IconURL = "https://www.startpage.com/favicon.ico";
+      #       Alias = "startpage";
+      #       Description = "Startpage Search";
+      #       SuggestURLTemplate = "https://www.startpage.com/osuggestions?q={searchTerms}";
+      #     }
+      #   ];
+      #   Default = "Startpage";
+      # };
       ExtensionSettings = {
         "uBlock0@raymondhill.net" = {
           installation_mode = "normal_installed";
