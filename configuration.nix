@@ -195,9 +195,10 @@
       wordnet
       ispell
       go-grip
-      emacs-lsp-booster
+      # Just causes more problems
+      # emacs-lsp-booster
       ((emacsPackagesFor emacs-pgtk).emacsWithPackages (epkgs: [
-        # epkgs.treesit-grammars.with-all-grammars
+        epkgs.treesit-grammars.with-all-grammars
       ]))
       jetbrains-toolbox
     ];
@@ -362,7 +363,7 @@
     portal = {
       enable = true;
       wlr.enable = true;
-      # extraPortals = [pkgs.xdg-desktop-portal-gtk];
+      extraPortals = [pkgs.xdg-desktop-portal-gtk];
       xdgOpenUsePortal = true;
     };
     terminal-exec = {
@@ -377,10 +378,11 @@
         "x-scheme-handler/http" = "firefox.desktop";
         "x-scheme-handler/https" = "firefox.desktop";
         "x-scheme-handler/about" = "firefox.desktop";
+        "x-scheme-handler/mailto" = "org.gnome.Evolution.desktop";
         "x-scheme-handler/unknown" = "firefox.desktop";
-        "image/gif" = "org.gnome.Loupe";
-        "image/jpeg" = "org.gnome.Loupe";
-        "image/png" = "org.gnome.Loupe";
+        "image/gif" = "org.gnome.Loupe.desktop";
+        "image/jpeg" = "org.gnome.Loupe.desktop";
+        "image/png" = "org.gnome.Loupe.desktop";
         "application/ogg" = "org.gnome.Rhythmbox3.desktop";
         "audio/x-mp3" = "org.gnome.Rhythmbox3.desktop";
         "video/avi" = "vlc.desktop";
