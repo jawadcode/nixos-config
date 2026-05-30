@@ -30,7 +30,6 @@
     };
     kernelPackages = pkgs.linuxPackages_latest;
     kernelParams = [
-      "systemd.swap=0"
       "zswap.enabled=1" # enables zswap
       "zswap.compressor=zstd" # compression algorithm
       "zswap.max_pool_percent=20" # maximum percentage of RAM that zswap is allowed to use
@@ -179,7 +178,6 @@
       spotify
       obsidian
       vscode
-      protonvpn-gui
       inkscape-with-extensions
       kdePackages.kdenlive
       (prismlauncher.override {
@@ -189,14 +187,19 @@
         ];
       })
       jellyfin-desktop
+      libreoffice-fresh
+      saber
+      hieroglyphic
+      devtoolbox
+      proton-vpn
+      mullvad
 
-      nerd-fonts.symbols-only
       sqlite
       wordnet
       ispell
       go-grip
-      # Just causes more problems
-      # emacs-lsp-booster
+
+      emacs-lsp-booster
       ((emacsPackagesFor emacs-pgtk).emacsWithPackages (epkgs: [
         epkgs.treesit-grammars.with-all-grammars
       ]))
@@ -423,6 +426,7 @@
       noto-fonts
       noto-fonts-color-emoji
       font-awesome_6
+      nerd-fonts.symbols-only
     ];
     fontconfig = {
       enable = true;
@@ -438,6 +442,8 @@
   services.gnome.evolution-data-server.enable = true;
   programs.evolution.enable = true;
   programs.evince.enable = true;
+
+  # services.mullvad-vpn.enable = true;
 
   programs.firefox = {
     enable = true;
