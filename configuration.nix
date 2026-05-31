@@ -192,7 +192,7 @@
       hieroglyphic
       devtoolbox
       proton-vpn
-      mullvad
+      qbittorrent
 
       sqlite
       wordnet
@@ -200,10 +200,8 @@
       go-grip
 
       emacs-lsp-booster
-      ((emacsPackagesFor emacs-pgtk).emacsWithPackages (epkgs: [
-        epkgs.treesit-grammars.with-all-grammars
-      ]))
-      jetbrains-toolbox
+      ((emacsPackagesFor emacs-pgtk)
+        .emacsWithPackages (epkgs: [epkgs.treesit-grammars.with-all-grammars]))
     ];
   };
 
@@ -273,6 +271,12 @@
     gcr-ssh-agent.enable = true;
   };
   programs.seahorse.enable = true;
+
+  services.mullvad-vpn = {
+    enable = true;
+    enableEarlyBootBlocking = true;
+    package = pkgs.mullvad-vpn;
+  };
 
   services.printing.enable = true;
 
