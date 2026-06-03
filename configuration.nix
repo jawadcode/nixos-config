@@ -187,6 +187,7 @@
         ];
       })
       jellyfin-desktop
+      delfin
       libreoffice-fresh
       saber
       hieroglyphic
@@ -200,8 +201,10 @@
       go-grip
 
       emacs-lsp-booster
-      ((emacsPackagesFor emacs-pgtk)
-        .emacsWithPackages (epkgs: [epkgs.treesit-grammars.with-all-grammars]))
+      ((emacsPackagesFor emacs-pgtk).emacsWithPackages (epkgs: [
+        epkgs.treesit-grammars.with-all-grammars
+        epkgs.vterm
+      ]))
     ];
   };
 
