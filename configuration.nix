@@ -194,6 +194,7 @@
       devtoolbox
       proton-vpn
       qbittorrent
+      graphviz
 
       sqlite
       wordnet
