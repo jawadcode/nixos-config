@@ -195,6 +195,7 @@
       proton-vpn
       qbittorrent
       graphviz
+      nmgui
 
       sqlite
       wordnet
