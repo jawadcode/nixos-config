@@ -121,10 +121,6 @@
     };
   };
 
-  services.xserver.xkb = {
-    layout = "gb";
-    variant = "";
-  };
   console.keyMap = "uk";
 
   users.users.qak = {
@@ -226,6 +222,7 @@
 
       glib
       xdg-utils
+      compsize
     ];
     variables = {
       MOZ_ENABLE_WAYLAND = 1;
