@@ -68,6 +68,8 @@
     };
   };
 
+  services.fstrim.enable = true;
+
   security = {
     polkit.enable = true;
     pam.services = {
