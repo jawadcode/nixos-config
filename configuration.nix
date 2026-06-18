@@ -196,8 +196,7 @@
       nmgui
 
       sqlite
-      wordnet
-      ispell
+      (hunspell.withDicts (dicts: [dicts.en_GB-ise]))
       go-grip
 
       emacs-lsp-booster
