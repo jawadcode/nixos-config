@@ -175,7 +175,8 @@
       discord
       spotify
       obsidian
-      vscode
+      neovim
+      vscodium-fhs
       inkscape-with-extensions
       kdePackages.kdenlive
       (prismlauncher.override {
@@ -277,7 +278,7 @@
 
   services.mullvad-vpn = {
     enable = true;
-    enableEarlyBootBlocking = true;
+    # enableEarlyBootBlocking = true;
     package = pkgs.mullvad-vpn;
   };
 
