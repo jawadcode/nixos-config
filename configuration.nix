@@ -96,6 +96,7 @@
   networking = {
     hostName = "hp-sauce";
     networkmanager.enable = true;
+    nftables.enable = true;
   };
 
   services.avahi = {
