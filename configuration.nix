@@ -1,6 +1,7 @@
 {
   lib,
   pkgs,
+  inputs,
   ...
 }: {
   imports = [./hardware-configuration.nix];
@@ -182,8 +183,9 @@
       kdePackages.kdenlive
       (prismlauncher.override {
         jdks = [
-          temurin-jre-bin-17
+          # temurin-jre-bin-17
           temurin-jre-bin-21
+          temurin-jre-bin-25
         ];
       })
       jellyfin-desktop
@@ -202,6 +204,16 @@
       go-grip
 
       emacs-lsp-booster
+      # (emacsWithDoom {
+      #   emacs = pkgs.emacs-pgtk;
+      #   doomDir = inputs.doom-config;
+      #   doomLocalDir = "~/.local/share/nix-doom";
+      #   extraPackages = epkgs: [
+      #     epkgs.treesit-grammars.with-all-grammars
+      #     epkgs.vterm
+      #   ];
+      # })
+
       ((emacsPackagesFor emacs-pgtk).emacsWithPackages (epkgs: [
         epkgs.treesit-grammars.with-all-grammars
         epkgs.vterm

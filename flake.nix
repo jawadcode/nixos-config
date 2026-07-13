@@ -1,8 +1,16 @@
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
+    # nix-doom-emacs-unstraightened = {
+    #   url = "github:marienz/nix-doom-emacs-unstraightened";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
+    # doom-config = {
+    #   url = "git+https://github.com/jawadcode/doom-config.git?submodules=1";
+    #   flake = false;
+    # };
   };
-  outputs = _inputs @ {
+  outputs = inputs @ {
     self,
     nixpkgs,
     ...
@@ -16,16 +24,10 @@
     in
       nixpkgs.lib.nixosSystem {
         inherit system pkgs;
+        specialArgs = {inherit inputs;};
         modules = [
           {
-            # nixpkgs.overlays = [
-            #   (import (
-            #     builtins.fetchTarball {
-            #       url = "https://github.com/nix-community/emacs-overlay/archive/27ced263ed6b7a6968f9f449d66aa299cb0f14a7.zip"; # ugh
-            #       sha256 = "sha256:0v6pl0zhs476hdfxdhaqk8y5nvibk4nra6rqxmfrq8a7fh230vv2";
-            #     }
-            #   ))
-            # ];
+            # nixpkgs.overlays = [inputs.nix-doom-emacs-unstraightened.overlays.default];
             nix.settings = {
               experimental-features = [
                 "nix-command"
