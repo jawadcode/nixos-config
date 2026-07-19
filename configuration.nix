@@ -172,6 +172,7 @@
       })
       loupe
       vlc
+      gelly
       gnome-calculator
       rhythmbox
       discord
@@ -203,17 +204,6 @@
       (hunspell.withDicts (dicts: [dicts.en_GB-ise]))
       go-grip
 
-      emacs-lsp-booster
-      # (emacsWithDoom {
-      #   emacs = pkgs.emacs-pgtk;
-      #   doomDir = inputs.doom-config;
-      #   doomLocalDir = "~/.local/share/nix-doom";
-      #   extraPackages = epkgs: [
-      #     epkgs.treesit-grammars.with-all-grammars
-      #     epkgs.vterm
-      #   ];
-      # })
-
       ((emacsPackagesFor emacs-pgtk).emacsWithPackages (epkgs: [
         epkgs.treesit-grammars.with-all-grammars
         epkgs.vterm
@@ -230,7 +220,7 @@
       man-pages-posix
       wget
       curl
-      git
+      gitFull
       ripgrep
       fd
       helix
@@ -309,6 +299,7 @@
 
   programs.git = {
     enable = true;
+    package = pkgs.gitFull;
     config = let
       email = "jawad.w.ahmed@gmail.com";
     in {
