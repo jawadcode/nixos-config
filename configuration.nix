@@ -47,6 +47,7 @@
     };
     enableAllFirmware = true;
     graphics.enable = true;
+    keyboard.qmk.enable = true;
   };
 
   services.tlp = {
@@ -199,6 +200,8 @@
       qbittorrent
       graphviz
       nmgui
+      ungoogled-chromium
+      vial
 
       sqlite
       (hunspell.withDicts (dicts: [dicts.en_GB-ise]))
@@ -228,6 +231,7 @@
       glib
       xdg-utils
       compsize
+      wofi # Purely for xdg-desktop-wlr display selection menu
     ];
     variables = {
       MOZ_ENABLE_WAYLAND = 1;
@@ -377,13 +381,22 @@
   xdg = {
     portal = {
       enable = true;
-      wlr.enable = true;
+      wlr = {
+        enable = true;
+        settings = {
+          screencast = {
+            max_fps = 60;
+            chooser_type = "simple";
+            chooser_cmd = "${pkgs.slurp}/bin/slurp -f 'Monitor: %o' -or";
+          };
+        };
+      };
       extraPortals = [pkgs.xdg-desktop-portal-gtk];
       xdgOpenUsePortal = true;
     };
     terminal-exec = {
       enable = true;
-      settings.default = ["org.wezfurlong.wezterm"];
+      settings.default = ["org.wezfurlong.wezterm.desktop"];
     };
     mime = {
       enable = true;
@@ -439,6 +452,7 @@
       noto-fonts-color-emoji
       font-awesome_6
       nerd-fonts.symbols-only
+      symbola
     ];
     fontconfig = {
       enable = true;
