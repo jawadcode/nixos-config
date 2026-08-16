@@ -1,10 +1,9 @@
-{
-  lib,
-  pkgs,
-  inputs,
-  ...
+{ lib
+, pkgs
+, inputs
+, ...
 }: {
-  imports = [./hardware-configuration.nix];
+  imports = [ ./hardware-configuration.nix ];
 
   boot = {
     loader = {
@@ -153,9 +152,10 @@
       tokei
       gcc
 
-      nil
-      alejandra
-      pyright
+      nixd
+      nixpkgs-fmt
+      # alejandra
+      basedpyright
       black
       bash-language-server
       shellcheck
@@ -204,7 +204,7 @@
       vial
 
       sqlite
-      (hunspell.withDicts (dicts: [dicts.en_GB-ise]))
+      (hunspell.withDicts (dicts: [ dicts.en_GB-ise ]))
       go-grip
 
       ((emacsPackagesFor emacs-pgtk).emacsWithPackages (epkgs: [
@@ -232,6 +232,9 @@
       xdg-utils
       compsize
       wofi # Purely for xdg-desktop-wlr display selection menu
+
+      wineWow64Packages.waylandFull
+      winetricks
     ];
     variables = {
       MOZ_ENABLE_WAYLAND = 1;
@@ -274,7 +277,7 @@
         error_symbol = "[λx.](bold red)";
       };
     };
-    presets = ["bracketed-segments"];
+    presets = [ "bracketed-segments" ];
   };
 
   services.gnome = {
@@ -304,19 +307,21 @@
   programs.git = {
     enable = true;
     package = pkgs.gitFull;
-    config = let
-      email = "jawad.w.ahmed@gmail.com";
-    in {
-      author = {
-        inherit email;
-        name = "Jawad W. Ahmed";
+    config =
+      let
+        email = "jawad.w.ahmed@gmail.com";
+      in
+      {
+        author = {
+          inherit email;
+          name = "Jawad W. Ahmed";
+        };
+        user = {
+          inherit email;
+          name = "jawadcode";
+        };
+        credential.helper = "${pkgs.gitFull}/bin/git-credential-libsecret";
       };
-      user = {
-        inherit email;
-        name = "jawadcode";
-      };
-      credential.helper = "${pkgs.gitFull}/bin/git-credential-libsecret";
-    };
   };
 
   services.gvfs.enable = true;
@@ -362,7 +367,8 @@
     xwayland.enable = true;
     extraPackages = with pkgs; [
       brightnessctl
-      wezterm
+      # wezterm
+      ghostty
       sway-contrib.grimshot
       swayidle
       swaylock
@@ -391,12 +397,13 @@
           };
         };
       };
-      extraPortals = [pkgs.xdg-desktop-portal-gtk];
+      extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
       xdgOpenUsePortal = true;
     };
     terminal-exec = {
       enable = true;
-      settings.default = ["org.wezfurlong.wezterm.desktop"];
+      # settings.default = [ "org.wezfurlong.wezterm.desktop" ];
+      settings.default = [ "com.mitchellh.ghostty.desktop" ];
     };
     mime = {
       enable = true;
@@ -445,22 +452,24 @@
 
   fonts = {
     packages = with pkgs; [
+      dejavu_fonts
       ibm-plex
       roboto
-      (iosevka-bin.override {variant = "SS07";})
+      (iosevka-bin.override { variant = "SS07"; })
       noto-fonts
       noto-fonts-color-emoji
       font-awesome_6
       nerd-fonts.symbols-only
+      liberation_ttf
       symbola
     ];
     fontconfig = {
       enable = true;
       defaultFonts = {
-        sansSerif = ["Roboto"];
-        serif = ["IBM Plex Serif"];
-        monospace = ["Iosevka Term SS07"];
-        emoji = ["Noto Color Emoji"];
+        sansSerif = [ "Roboto" ];
+        serif = [ "IBM Plex Serif" ];
+        monospace = [ "Iosevka Term SS07" ];
+        emoji = [ "Noto Color Emoji" ];
       };
     };
   };
