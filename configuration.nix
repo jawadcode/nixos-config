@@ -185,7 +185,6 @@
       kdePackages.kdenlive
       (prismlauncher.override {
         jdks = [
-          # temurin-jre-bin-17
           temurin-jre-bin-21
           temurin-jre-bin-25
         ];
@@ -202,6 +201,12 @@
       nmgui
       ungoogled-chromium
       vial
+      kdePackages.okular
+      sioyek
+      gparted-full
+      gnome-maps
+      gnome-system-monitor
+      gnome-calendar
 
       sqlite
       (hunspell.withDicts (dicts: [ dicts.en_GB-ise ]))
@@ -280,8 +285,12 @@
     presets = [ "bracketed-segments" ];
   };
 
+
+  programs.dconf.enable = true;
   services.gnome = {
     gnome-keyring.enable = true;
+    # SSO for Evolution and GNOME Calendar
+    gnome-online-accounts.enable = true;
     gcr-ssh-agent.enable = true;
   };
   programs.seahorse.enable = true;
