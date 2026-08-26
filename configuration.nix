@@ -161,6 +161,8 @@
       shellcheck
       shfmt
 
+      quickshell
+
       # Try to sort out themeing situation without home-manager
       yaru-theme
       posy-cursors
@@ -206,6 +208,7 @@
       gparted-full
       gnome-maps
       gnome-system-monitor
+      gnome-online-accounts-gtk
       gnome-calendar
 
       sqlite
@@ -230,6 +233,7 @@
       curl
       gitFull
       ripgrep
+      jq
       fd
       helix
 
@@ -392,6 +396,8 @@
 
   services.playerctld.enable = true;
 
+  services.upower.enable = true;
+
   programs.waybar.enable = true;
 
   xdg = {
@@ -468,7 +474,8 @@
       (iosevka-bin.override { variant = "SS07"; })
       noto-fonts
       noto-fonts-color-emoji
-      font-awesome_6
+      # font-awesome_6
+      font-awesome_7
       nerd-fonts.symbols-only
       liberation_ttf
       symbola
