@@ -215,7 +215,7 @@
       (hunspell.withDicts (dicts: [ dicts.en_GB-ise ]))
       go-grip
 
-      ((emacsPackagesFor emacs-pgtk).emacsWithPackages (epkgs: [
+      ((emacsPackagesFor emacs-unstable-pgtk).emacsWithPackages (epkgs: [
         epkgs.treesit-grammars.with-all-grammars
         epkgs.vterm
       ]))
