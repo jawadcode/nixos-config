@@ -210,6 +210,8 @@
       gnome-system-monitor
       gnome-online-accounts-gtk
       gnome-calendar
+      resources
+      stoat-desktop
 
       sqlite
       (hunspell.withDicts (dicts: [ dicts.en_GB-ise ]))
