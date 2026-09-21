@@ -1,8 +1,4 @@
-{ lib
-, pkgs
-, inputs
-, ...
-}: {
+{ lib, pkgs, inputs, ... }: {
   imports = [ ./hardware-configuration.nix ];
 
   boot = {
@@ -174,6 +170,7 @@
         ];
       })
       loupe
+      gthumb # Good for precise cropping
       vlc
       gelly
       gnome-calculator
@@ -221,6 +218,7 @@
         epkgs.treesit-grammars.with-all-grammars
         epkgs.vterm
       ]))
+      gram
     ];
   };
 
@@ -385,6 +383,7 @@
       brightnessctl
       # wezterm
       ghostty
+      # cosmic-term
       sway-contrib.grimshot
       swayidle
       swaylock
@@ -422,6 +421,7 @@
       enable = true;
       # settings.default = [ "org.wezfurlong.wezterm.desktop" ];
       settings.default = [ "com.mitchellh.ghostty.desktop" ];
+      # settings.default = [ "com.system76.CosmicTerm.desktop" ];
     };
     mime = {
       enable = true;
