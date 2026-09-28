@@ -154,6 +154,7 @@
       basedpyright
       black
       bash-language-server
+      vscode-json-languageserver
       shellcheck
       shfmt
 
