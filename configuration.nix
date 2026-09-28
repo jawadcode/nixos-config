@@ -232,6 +232,7 @@
       wget
       curl
       gitFull
+      difftastic
       ripgrep
       jq
       fd
@@ -320,6 +321,7 @@
   programs.git = {
     enable = true;
     package = pkgs.gitFull;
+    attributes = "* merge=mergiraf";
     config =
       let
         email = "jawad.w.ahmed@gmail.com";
@@ -334,6 +336,14 @@
           name = "jawadcode";
         };
         credential.helper = "${pkgs.gitFull}/bin/git-credential-libsecret";
+        diff.external = lib.meta.getExe pkgs.difftastic;
+        merge = {
+          conflictstyle = "diff3";
+          mergiraf = {
+            name = "mergiraf";
+            driver = "mergiraf merge --git %O %A %B -s %S -x %X -y %Y -p %P -l %L";
+          };
+        };
       };
   };
 
