@@ -1,10 +1,12 @@
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
     emacs-overlay.url = "github:nix-community/emacs-overlay";
     # emacs-overlay.inputs.nixpkgs-stable.follows = "nixpkgs";
+    gram-extensions.url = "git+https://codeberg.org/niklaskorz/nix-gram-extensions.git";
   };
-  outputs = inputs @ { self, nixpkgs, emacs-overlay, ... }: {
+  outputs = { nixpkgs, nixpkgs-unstable, emacs-overlay, gram-extensions, ... }: {
     nixosConfigurations.hp-sauce =
       let
         system = "x86_64-linux";
@@ -16,7 +18,14 @@
       in
       nixpkgs.lib.nixosSystem {
         inherit system pkgs;
-        specialArgs = { inherit inputs; };
+        specialArgs = {
+          nixpkgs-unstable = import nixpkgs-unstable {
+            inherit system;
+            config.allowUnfree = true;
+          };
+          wasip2Pkgs = gram-extensions.inputs.nixpkgs.legacyPackages.${system}.pkgsCross.wasm32-wasip2;
+          gram-extensions = gram-extensions.packages.${system};
+        };
         modules = [
           {
             nix.settings = {

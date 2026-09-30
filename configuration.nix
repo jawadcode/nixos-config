@@ -1,4 +1,4 @@
-{ lib, pkgs, inputs, ... }: {
+{ lib, pkgs, nixpkgs-unstable, wasip2Pkgs, gram-extensions, ... }: {
   imports = [ ./hardware-configuration.nix ];
 
   boot = {
@@ -219,7 +219,17 @@
         epkgs.treesit-grammars.with-all-grammars
         epkgs.vterm
       ]))
-      gram
+      # gram
+      (
+        let
+          ge = gram-extensions;
+          haskell = wasip2Pkgs.callPackage ./gram-extensions/haskell.nix {
+            inherit (ge) buildGramRustExtension;
+          };
+          extensions = [ ge.csharp ge.svelte ge.typst ge.vue haskell ];
+        in
+        ge.wrapGramWithExtensions nixpkgs-unstable.gram extensions
+      )
     ];
   };
 
