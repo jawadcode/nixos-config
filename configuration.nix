@@ -199,6 +199,8 @@
       qbittorrent
       graphviz
       nmgui
+      networkmanagerapplet
+      geteduroam
       ungoogled-chromium
       vial
       kdePackages.okular
@@ -223,10 +225,9 @@
       (
         let
           ge = gram-extensions;
-          haskell = wasip2Pkgs.callPackage ./gram-extensions/haskell.nix {
-            inherit (ge) buildGramRustExtension;
-          };
-          extensions = [ ge.csharp ge.svelte ge.typst ge.vue haskell ];
+          mkExt = path: wasip2Pkgs.callPackage path { inherit (ge) buildGramRustExtension; };
+          extensions = [ ge.csharp ge.svelte ge.typst ge.vue ] ++
+            builtins.map mkExt [ ./gram-extensions/haskell.nix ./gram-extensions/ocaml.nix ];
         in
         ge.wrapGramWithExtensions nixpkgs-unstable.gram extensions
       )
