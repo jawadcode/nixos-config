@@ -212,7 +212,9 @@
       gnome-calendar
       resources
       stoat-desktop
-
+      texliveFullWithDocs
+      imagemagick
+      kile
       sqlite
       (hunspell.withDicts (dicts: [ dicts.en_GB-ise ]))
       go-grip
